@@ -1,10 +1,9 @@
 module.exports = {
-  Receive: {
+  RECEIVE: {
     AUTH: 0,
   },
-  Send: {
+  SEND: {
     AUTH: 0,
-    MOTD: 1,
-    MESSAGE: 2,
+    MESSAGE: 1,
   },
 };

@@ -30,20 +30,20 @@ io.on("connection", (socket) => {
   });
 
   // send auth request
-  socket.emit("message", types.Send.AUTH, null);
+  socket.emit("message", types.SEND.AUTH, null);
 
   // handle messages
   socket.on("message", (type, data) => {
     log(socket.id, "<-", type, data);
     const json = JSON.parse(data);
     switch (type) {
-      case types.Receive.AUTH:
+      case types.RECEIVE.AUTH:
         if (players.has(json.key)) {
           sockets.set(socket.id, { socket, ...players.get(json.key) });
           socket.join(ROOM);
         } else {
           log(socket.id, `Invalid key: ${json.key}`);
-          sendMessage(socket, "You are not authorized!");
+          sendMessage(socket, null, "You are not authorized!");
           socket.disconnect();
         }
         break;
@@ -55,7 +55,7 @@ io.of("/").adapter.on("join-room", (room, id) => {
   if (room === ROOM) {
     const s = sockets.get(id);
     log(id, `aka ${s.nick} joined ${room}`);
-    sendMessage(s.socket, motd(s.nick));
+    s.socket.emit("motd", JSON.stringify(motd(s.nick, SEED)));
   }
 });
 
