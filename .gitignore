@@ -4,3 +4,6 @@ node_modules
 # vim swap files
 *.swp
 *.swo
+
+# authorized players
+players.json
