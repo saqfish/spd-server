@@ -18,6 +18,7 @@
   "homepage": "https://github.com/saqfish/spd-server#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "loglevel": "^1.7.1",
     "socket.io": "^4.1.2",
     "socket.io-client": "^4.1.2"
   }
