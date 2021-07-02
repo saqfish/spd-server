@@ -1,6 +1,7 @@
 module.exports = {
   RECEIVE: {
     AUTH: 0,
+    ACTION: 1,
   },
   SEND: {
     AUTH: 0,

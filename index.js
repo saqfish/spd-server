@@ -8,6 +8,7 @@ const io = require("socket.io")(defaults.port, {
 });
 
 const types = require("./types");
+const actions = require("./actions");
 const { motd, sendMessage } = require("./messages");
 const playerList = require("./players");
 
@@ -16,7 +17,7 @@ for (p of playerList) players.set(p.key, { nick: p.nick });
 
 const sockets = new Map();
 
-const ROOM = defaults.room;
+const depth = (d) => `defaults.room-${d}`;
 const SEED = defaults.seed;
 
 const log = (k, ...m) => console.log(`${k}:`, ...m);
@@ -31,36 +32,60 @@ io.on("connection", (socket) => {
 
   // send auth request
   socket.emit("message", types.SEND.AUTH, null);
+  log("AUTH", `-> ${socket.id}`);
 
   // handle messages
   socket.on("message", (type, data) => {
-    log(socket.id, "<-", type, data);
-    const json = JSON.parse(data);
+    let json;
+    let player;
     switch (type) {
       case types.RECEIVE.AUTH:
+        json = JSON.parse(data);
+        log(socket.id, "<-", "AUTH", json.key);
         if (players.has(json.key)) {
+          const player = players.get(json.key);
           sockets.set(socket.id, { socket, ...players.get(json.key) });
-          socket.join(ROOM);
+          socket.emit("motd", JSON.stringify(motd(player.nick, SEED)));
+          log(socket.id, `identified as ${player.nick}`);
         } else {
           log(socket.id, `Invalid key: ${json.key}`);
           sendMessage(socket, null, "You are not authorized!");
           socket.disconnect();
         }
         break;
+      case types.RECEIVE.ACTION:
+        player = sockets.get(socket.id);
+        json = JSON.parse(data);
+        switch (json.type) {
+          case actions.ASC:
+            log(player.nick, "<-", "ASCEND", json.depth);
+            socket.join(depth(json.depth));
+            break;
+          case actions.DESC:
+            log(player.nick, "<-", "DESCEND", json.depth);
+            socket.join(depth(json.depth));
+            break;
+          case actions.MOVE:
+            log(player.nick, "<-", "MOVE", json.dst);
+            break;
+        }
+        break;
+      default:
+        log(socket.id, "<-", "UNKNOWN", type, data);
+        break;
     }
   });
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {
-  if (room === ROOM) {
+  if (room.includes(defaults.room)) {
     const s = sockets.get(id);
     log(id, `aka ${s.nick} joined ${room}`);
-    s.socket.emit("motd", JSON.stringify(motd(s.nick, SEED)));
   }
 });
 
 io.of("/").adapter.on("leave-room", (room, id) => {
-  if (room === ROOM) {
+  if (room.includes(defaults.room)) {
     const s = sockets.get(id);
     log(s.nick, `left room ${room}`);
   }
