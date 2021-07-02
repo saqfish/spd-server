@@ -17,7 +17,7 @@ for (p of playerList) players.set(p.key, { nick: p.nick });
 
 const sockets = new Map();
 
-const depth = (d) => `defaults.room-${d}`;
+const depth = (d) => `${defaults.room}-${d}`;
 const SEED = defaults.seed;
 
 const log = (k, ...m) => console.log(`${k}:`, ...m);
@@ -39,18 +39,19 @@ io.on("connection", (socket) => {
   socket.on("message", (type, data) => {
     let json;
     let player;
+    let room;
     switch (type) {
       case types.RECEIVE.AUTH:
         json = JSON.parse(data);
         log(socket.id, "<-", "AUTH", json.key);
         if (sockets.has(socket.id)) {
           // multiple auth, disconnect
-	  socket.disconnect();
+          socket.disconnect();
           return;
         }
         if (players.has(json.key)) {
           const player = players.get(json.key);
-          sockets.set(socket.id, { socket, ...players.get(json.key) });
+          sockets.set(socket.id, { ...players.get(json.key) });
           socket.emit("motd", JSON.stringify(motd(player.nick, SEED)));
           log(socket.id, `identified as ${player.nick}`);
         } else {
@@ -65,14 +66,30 @@ io.on("connection", (socket) => {
         switch (json.type) {
           case actions.ASC:
             log(player.nick, "<-", "ASCEND", json.depth);
-            socket.join(depth(json.depth));
+            room = depth(json.depth);
+            joinDepthRoom(socket, room, player.nick);
+            log(player.nick, "->", "ASCEND", room);
             break;
           case actions.DESC:
             log(player.nick, "<-", "DESCEND", json.depth);
-            socket.join(depth(json.depth));
+            room = depth(json.depth);
+            joinDepthRoom(socket, room, player.nick);
             break;
           case actions.MOVE:
-            log(player.nick, "<-", "MOVE", json.dst);
+            log(player.nick, "<-", "MOVE", json.depth, json.dst);
+            room = depth(json.depth);
+            socket.to(room).emit(
+              "action",
+              JSON.stringify({
+                type: actions.MOVE,
+                player,
+                data: {
+                  depth: json.depth,
+                  dst: json.dst,
+                },
+              })
+            );
+            log(player.nick, "->", "MOVE", room);
             break;
         }
         break;
@@ -83,16 +100,25 @@ io.on("connection", (socket) => {
   });
 });
 
-io.of("/").adapter.on("join-room", (room, id) => {
-  if (room.includes(defaults.room)) {
-    const s = sockets.get(id);
-    log(id, `aka ${s.nick} joined ${room}`);
+const joinDepthRoom = (socket, depth, nick) => {
+  if (socket.rooms.size) {
+    for (r of socket.rooms) {
+      if (r != socket.id) {
+        socket.to(r).emit("action", `${nick} left ${r}`);
+        socket.leave(r);
+      }
+    }
   }
+  socket.join(depth);
+  socket.to(depth).emit("action", `${nick} joined ${depth}`);
+};
+
+io.of("/").adapter.on("join-room", (room, id) => {
+  const s = sockets.get(id);
+  log(id, `${id} joined ${room}`);
 });
 
 io.of("/").adapter.on("leave-room", (room, id) => {
-  if (room.includes(defaults.room)) {
-    const s = sockets.get(id);
-    log(s.nick, `left room ${room}`);
-  }
+  const s = sockets.get(id);
+  log(id, `${id} left ${room}`);
 });
