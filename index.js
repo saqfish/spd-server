@@ -42,6 +42,11 @@ io.on("connection", (socket) => {
       case types.RECEIVE.AUTH:
         json = JSON.parse(data);
         log(socket.id, "<-", "AUTH", json.key);
+        if (sockets.has(socket.id)) {
+          // multiple auth, disconnect
+	  socket.disconnect();
+          return;
+        }
         if (players.has(json.key)) {
           const player = players.get(json.key);
           sockets.set(socket.id, { socket, ...players.get(json.key) });
