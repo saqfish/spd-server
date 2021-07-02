@@ -28,6 +28,7 @@ io.on("connection", (socket) => {
   // handle disconnect
   socket.on("disconnect", (reason) => {
     log(socket.id, "disconnected");
+    sockets.delete(socket.id);
   });
 
   // send auth request
