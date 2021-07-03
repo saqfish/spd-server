@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
   });
 
   // send auth request
-  socket.emit("message", types.SEND.AUTH, null);
+  socket.emit(types.SEND.AUTH, types.SEND.AUTH, null);
   log("AUTH", `-> ${socket.id}`);
 
   // handle messages
@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
     switch (type) {
       case types.RECEIVE.AUTH:
         json = JSON.parse(data);
-        log(socket.id, "<-", "AUTH", json.key);
+        log(socket.id, "<- AUTH", json.key);
         if (sockets.has(socket.id)) {
           // multiple auth, disconnect
           socket.disconnect();
@@ -51,8 +51,9 @@ io.on("connection", (socket) => {
         }
         if (players.has(json.key)) {
           const player = players.get(json.key);
-          sockets.set(socket.id, { ...players.get(json.key) });
-          socket.emit("motd", JSON.stringify(motd(player.nick, SEED)));
+          const payload = motd(player.nick, SEED);
+          sockets.set(socket.id, { socket, ...players.get(json.key) });
+          socket.emit(types.SEND.MOTD, JSON.stringify(payload));
           log(socket.id, `identified as ${player.nick}`);
         } else {
           log(socket.id, `Invalid key: ${json.key}`);
@@ -63,33 +64,31 @@ io.on("connection", (socket) => {
       case types.RECEIVE.ACTION:
         player = sockets.get(socket.id);
         json = JSON.parse(data);
+        room = depth(json.depth);
         switch (json.type) {
           case actions.ASC:
-            log(player.nick, "<-", "ASCEND", json.depth);
-            room = depth(json.depth);
-            joinDepthRoom(socket, room, player.nick);
-            log(player.nick, "->", "ASCEND", room);
+            joinDepthRoom(socket, room, json.pos, player.nick);
+            sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+            log(player.nick, "<- ASCEND", json, `-> ${room}`);
             break;
           case actions.DESC:
-            log(player.nick, "<-", "DESCEND", json.depth);
-            room = depth(json.depth);
-            joinDepthRoom(socket, room, player.nick);
+            joinDepthRoom(socket, room, json.pos, player.nick);
+            sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+            log(player.nick, "<- DESCEND", json, `-> ${room}`);
             break;
           case actions.MOVE:
-            log(player.nick, "<-", "MOVE", json.depth, json.dst);
-            room = depth(json.depth);
             socket.to(room).emit(
-              "action",
+              types.SEND.ACTION,
+              actions.MOVE,
               JSON.stringify({
-                type: actions.MOVE,
-                player,
                 data: {
                   depth: json.depth,
-                  dst: json.dst,
+                  pos: json.pos,
                 },
               })
             );
-            log(player.nick, "->", "MOVE", room);
+            sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+            log(player.nick, "<- MOVE", json, `-> ${room}`);
             break;
         }
         break;
@@ -100,25 +99,43 @@ io.on("connection", (socket) => {
   });
 });
 
-const joinDepthRoom = (socket, depth, nick) => {
+const joinDepthRoom = (socket, depth, pos, nick) => {
   if (socket.rooms.size) {
     for (r of socket.rooms) {
       if (r != socket.id) {
-        socket.to(r).emit("action", `${nick} left ${r}`);
+        let payload = JSON.stringify({ id: socket.id, nick });
+        socket.to(r).emit(types.SEND.ACTION, actions.LEAVE, payload);
         socket.leave(r);
       }
     }
   }
   socket.join(depth);
-  socket.to(depth).emit("action", `${nick} joined ${depth}`);
+  let payload = JSON.stringify({ id: socket.id, nick });
+  socket.to(depth).emit(types.SEND.ACTION, actions.JOIN, payload);
 };
 
 io.of("/").adapter.on("join-room", (room, id) => {
-  const s = sockets.get(id);
-  log(id, `${id} joined ${room}`);
+  const r = new Set(io.sockets.adapter.rooms.get(room));
+  r.delete(id);
+  if (r.size) {
+    const players = [...r];
+    players.forEach((p, i) => {
+      let { socket, nick, type, depth, pos } = sockets.get(p);
+      players[i] = {
+        id: socket.id,
+        nick,
+        type,
+        depth,
+        pos,
+      };
+    });
+    let payload = JSON.stringify({
+      data: {
+        players,
+      },
+    });
+    io.to(id).emit(types.SEND.ACTION, actions.JOINLIST, payload);
+  }
 });
 
-io.of("/").adapter.on("leave-room", (room, id) => {
-  const s = sockets.get(id);
-  log(id, `${id} left ${room}`);
-});
+io.of("/").adapter.on("leave-room", (room, id) => {});

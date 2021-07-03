@@ -4,8 +4,9 @@ module.exports = {
     ACTION: 1,
   },
   SEND: {
-    AUTH: 0,
-    MESSAGE: 1,
-    ACTION: 2,
+    AUTH: "auth",
+    MESSAGE: "message",
+    MOTD: "motd",
+    ACTION: "action",
   },
 };
