@@ -17,7 +17,7 @@ for (p of playerList) players.set(p.key, { nick: p.nick });
 
 const sockets = new Map();
 
-const depth = (d) => `${defaults.room}-${d}`;
+const depthToRoom = (d) => `${defaults.room}-${d}`;
 const SEED = defaults.seed;
 
 const log = (k, ...m) => console.log(`${k}:`, ...m);
@@ -64,15 +64,15 @@ io.on("connection", (socket) => {
       case types.RECEIVE.ACTION:
         player = sockets.get(socket.id);
         json = JSON.parse(data);
-        room = depth(json.depth);
+        room = depthToRoom(json.depth);
         switch (json.type) {
           case actions.ASC:
-            joinDepthRoom(socket, room, json.pos, player.nick);
+            joinDepthRoom(socket, json.depth, json.pos, player.nick);
             sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
             log(player.nick, "<- ASCEND", json, `-> ${room}`);
             break;
           case actions.DESC:
-            joinDepthRoom(socket, room, json.pos, player.nick);
+            joinDepthRoom(socket, json.depth, json.pos, player.nick);
             sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
             log(player.nick, "<- DESCEND", json, `-> ${room}`);
             break;
@@ -81,10 +81,10 @@ io.on("connection", (socket) => {
               types.SEND.ACTION,
               actions.MOVE,
               JSON.stringify({
-                data: {
-                  depth: json.depth,
-                  pos: json.pos,
-                },
+                id: socket.id,
+                nick: player.nick,
+                depth: json.depth,
+                pos: json.pos,
               })
             );
             sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
@@ -103,15 +103,16 @@ const joinDepthRoom = (socket, depth, pos, nick) => {
   if (socket.rooms.size) {
     for (r of socket.rooms) {
       if (r != socket.id) {
-        let payload = JSON.stringify({ id: socket.id, nick });
+        let payload = JSON.stringify({ id: socket.id, nick, depth, pos });
         socket.to(r).emit(types.SEND.ACTION, actions.LEAVE, payload);
         socket.leave(r);
       }
     }
   }
-  socket.join(depth);
-  let payload = JSON.stringify({ id: socket.id, nick });
-  socket.to(depth).emit(types.SEND.ACTION, actions.JOIN, payload);
+  const room = depthToRoom(depth);
+  socket.join(room);
+  let payload = JSON.stringify({ id: socket.id, nick, depth, pos });
+  socket.to(room).emit(types.SEND.ACTION, actions.JOIN, payload);
 };
 
 io.of("/").adapter.on("join-room", (room, id) => {
@@ -120,19 +121,16 @@ io.of("/").adapter.on("join-room", (room, id) => {
   if (r.size) {
     const players = [...r];
     players.forEach((p, i) => {
-      let { socket, nick, type, depth, pos } = sockets.get(p);
+      let { socket, nick, depth, pos } = sockets.get(p);
       players[i] = {
         id: socket.id,
         nick,
-        type,
         depth,
         pos,
       };
     });
     let payload = JSON.stringify({
-      data: {
-        players,
-      },
+      players,
     });
     io.to(id).emit(types.SEND.ACTION, actions.JOINLIST, payload);
   }
