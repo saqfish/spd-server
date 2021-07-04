@@ -26,8 +26,20 @@ io.on("connection", (socket) => {
   log(socket.id, "connected");
 
   // handle disconnect
-  socket.on("disconnect", (reason) => {
+  socket.on("disconnecting", (reason) => {
     log(socket.id, "disconnected");
+    const s = sockets.get(socket.id);
+    for (const room of socket.rooms) {
+      if (room !== socket.id) {
+        let payload = JSON.stringify({
+          id: socket.id,
+          nick: s.nick,
+          depth: s.depth,
+          pos: s.pos,
+        });
+        socket.to(room).emit(types.SEND.ACTION, actions.LEAVE, payload);
+      }
+    }
     sockets.delete(socket.id);
   });
 
