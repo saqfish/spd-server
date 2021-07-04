@@ -33,6 +33,7 @@ io.on("connection", (socket) => {
       if (room !== socket.id) {
         let payload = JSON.stringify({
           id: socket.id,
+          playerClass: s.playerClass,
           nick: s.nick,
           depth: s.depth,
           pos: s.pos,
@@ -79,12 +80,24 @@ io.on("connection", (socket) => {
         room = depthToRoom(json.depth);
         switch (json.type) {
           case actions.ASC:
-            joinDepthRoom(socket, json.depth, json.pos, player.nick);
+            joinDepthRoom(
+              socket,
+              json.playerClass,
+              json.depth,
+              json.pos,
+              player.nick
+            );
             sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
             log(player.nick, "<- ASCEND", json, `-> ${room}`);
             break;
           case actions.DESC:
-            joinDepthRoom(socket, json.depth, json.pos, player.nick);
+            joinDepthRoom(
+              socket,
+              json.playerClass,
+              json.depth,
+              json.pos,
+              player.nick
+            );
             sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
             log(player.nick, "<- DESCEND", json, `-> ${room}`);
             break;
@@ -94,6 +107,7 @@ io.on("connection", (socket) => {
               actions.MOVE,
               JSON.stringify({
                 id: socket.id,
+                playerClass: player.playerClass,
                 nick: player.nick,
                 depth: json.depth,
                 pos: json.pos,
@@ -111,11 +125,17 @@ io.on("connection", (socket) => {
   });
 });
 
-const joinDepthRoom = (socket, depth, pos, nick) => {
+const joinDepthRoom = (socket, playerClass, depth, pos, nick) => {
   if (socket.rooms.size) {
     for (r of socket.rooms) {
       if (r != socket.id) {
-        let payload = JSON.stringify({ id: socket.id, nick, depth, pos });
+        let payload = JSON.stringify({
+          id: socket.id,
+          playerClass,
+          nick,
+          depth,
+          pos,
+        });
         socket.to(r).emit(types.SEND.ACTION, actions.LEAVE, payload);
         socket.leave(r);
       }
@@ -123,7 +143,13 @@ const joinDepthRoom = (socket, depth, pos, nick) => {
   }
   const room = depthToRoom(depth);
   socket.join(room);
-  let payload = JSON.stringify({ id: socket.id, nick, depth, pos });
+  let payload = JSON.stringify({
+    id: socket.id,
+    playerClass,
+    nick,
+    depth,
+    pos,
+  });
   socket.to(room).emit(types.SEND.ACTION, actions.JOIN, payload);
 };
 
@@ -133,9 +159,10 @@ io.of("/").adapter.on("join-room", (room, id) => {
   if (r.size) {
     const players = [...r];
     players.forEach((p, i) => {
-      let { socket, nick, depth, pos } = sockets.get(p);
+      let { socket, playerClass, nick, depth, pos } = sockets.get(p);
       players[i] = {
         id: socket.id,
+        playerClass,
         nick,
         depth,
         pos,
