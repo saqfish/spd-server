@@ -1,5 +1,19 @@
 {
-	"port": 5500,
-	"room": "spdnet",
-	"seed": 123456789
+	"PORT": 5000,
+	"ROOMPREFIX": "spdnet",
+	"SEED": 123456789,
+	"keys": [
+		{
+			"key": "android",
+			"nick": "saqfish-android"
+		},
+		{
+			"key": "debug",
+			"nick": "saqfish-debug"
+		},
+		{
+			"key": "1234",
+			"nick": "saqfish"
+		}
+	]
 }
