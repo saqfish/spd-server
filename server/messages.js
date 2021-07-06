@@ -5,7 +5,7 @@ const actions = require("./actions");
 const { log, depthToRoom, joinDepthRoom, playerPayload } = require("./util");
 
 const motd = (nick, seed) => ({
-  motd: `Hello ${nick}! Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! Build: ${version}`,
+  motd: `Hello ${nick}! Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
   seed,
 });
 
@@ -17,10 +17,11 @@ const sendMessage = (socket, type, data) => {
   socket.emit("message", JSON.stringify(json));
 };
 
-const handleMessages = (sockets, players, socket, type, data) => {
-  let json = JSON.parse(data);
+const handleMessages = (...args) => {
   const messages = {
-    [types.RECEIVE.AUTH]: (socket, json) => {
+    [types.RECEIVE.AUTH]: (args) => {
+      let { sockets, players, socket, type, data } = args;
+      let json = JSON.parse(data);
       log(socket.id, "<- AUTH", json.key);
       if (sockets.has(socket.id)) {
         socket.disconnect();
@@ -38,34 +39,75 @@ const handleMessages = (sockets, players, socket, type, data) => {
         socket.disconnect();
       }
     },
-    [types.RECEIVE.ACTION]: (socket, json) => {
+    [types.RECEIVE.ACTION]: (args) => {
+      let { sockets, players, socket, type, data } = args;
+      let json = JSON.parse(data);
       let player = sockets.get(socket.id);
       room = depthToRoom(json.depth);
       switch (json.type) {
         case actions.ASC:
           log(player.nick, "<- ASCEND", json, `-> ${room}`);
-          joinDepthRoom( socket, json.playerClass, json.depth, json.pos, player.nick);
+          joinDepthRoom(
+            socket,
+            json.playerClass,
+            json.depth,
+            json.pos,
+            player.nick
+          );
           sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
           break;
         case actions.DESC:
           log(player.nick, "<- DESCEND", json, `-> ${room}`);
-          joinDepthRoom( socket, json.playerClass, json.depth, json.pos, player.nick
+          joinDepthRoom(
+            socket,
+            json.playerClass,
+            json.depth,
+            json.pos,
+            player.nick
           );
           sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
           break;
         case actions.MOVE:
           log(player.nick, "<- MOVE", json, `-> ${room}`);
-          let payload = playerPayload( socket.id, player.playerClass, player.nick, json.depth, json.pos);
+          let payload = playerPayload(
+            socket.id,
+            player.playerClass,
+            player.nick,
+            json.depth,
+            json.pos
+          );
           socket.to(room).emit(types.SEND.ACTION, actions.MOVE, payload);
           sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
           break;
       }
     },
-    default: () => {
+    [types.RECEIVE.PLAYERLISTREQUEST]: (args) => {
+      let { sockets, players, socket, type, data } = args;
+      const list = [];
+      sockets.forEach((p, i) => {
+        const get = (i, o) => {
+          let { [i]: n } = o;
+          if (n === 0) return n;
+          return n || null;
+        };
+        list.push({
+          nick: get("nick", p),
+          playerClass: get("playerClass", p),
+          depth: get("depth", p),
+        });
+      });
+      let payload = JSON.stringify({ list });
+      socket.emit(types.SEND.PLAYERLISTREQUEST, payload);
+    },
+    default: (args) => {
+      let { sockets, players, socket, type, data } = args;
+      let json = JSON.stringify(data);
       log(socket.id, "<-", "UNKNOWN", type, json);
     },
   };
-  return (messages[type] || messages["default"])(socket, json);
+  let [sockets, players, socket, type, data] = args;
+  let nargs = { sockets, players, socket, type, data };
+  return (messages[type] || messages["default"])(nargs);
 };
 
 module.exports = { sendMessage, handleMessages };
