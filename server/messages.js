@@ -2,7 +2,7 @@ const { SEED } = require("../defaults");
 const { version } = require("../package");
 const types = require("./types");
 const actions = require("./actions");
-const { log, depthToRoom, joinDepthRoom, playerPayload } = require("./util");
+const { log, depthToRoom, joinDepthRoom, playerPayload, sortSocketsByDepth } = require("./util");
 
 const motd = (nick, seed) => ({
   motd: `Hello ${nick}! Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
@@ -55,6 +55,7 @@ const handleMessages = (...args) => {
             player.nick
           );
           sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+          sortSocketsByDepth(sockets);
           break;
         case actions.DESC:
           log(player.nick, "<- DESCEND", json, `-> ${room}`);
@@ -66,6 +67,7 @@ const handleMessages = (...args) => {
             player.nick
           );
           sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+          sortSocketsByDepth(sockets);
           break;
         case actions.MOVE:
           log(player.nick, "<- MOVE", json, `-> ${room}`);
