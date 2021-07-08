@@ -27,7 +27,7 @@ const playerPayload = (id, playerClass, nick, depth, pos) =>
 const sortSocketsByDepth = (sockets) => {
   const socketsArr = new Map(
     [...sockets.entries()].sort((a, b) => {
-      return b[1].depth - a[1].depth;
+      return !b[1].depth || !a[1].depth ? -1 : b[1].depth - a[1].depth;
     })
   );
   sockets.clear();
