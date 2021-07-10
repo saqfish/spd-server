@@ -1,6 +1,9 @@
 # node files
 node_modules
 
+# test client
+client
+
 # vim swap files
 *.swp
 *.swo
