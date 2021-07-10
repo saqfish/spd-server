@@ -1,8 +1,12 @@
 const { PORT, keys } = require("../defaults");
 const { log } = require("./util");
-const types = require("./types");
-const actions = require("./actions");
-const { handleMessages } = require("./messages");
+const send = require("./send");
+const events = require("./events/events");
+const { handlePlayerListRequest } = require("./events/playerListRequest");
+const { handleDisconnect } = require("./events/disconnect");
+const { handleMessages } = require("./events/messages");
+const { handleActions } = require("./events/actions");
+const { handleAuth } = require("./events/auth");
 
 const sockets = new Map();
 const players = new Map();
@@ -17,25 +21,13 @@ const io = require("socket.io")(PORT, {
 
 io.on("connection", (socket) => {
   log(socket.id, "connected");
+  socket.emit(events.AUTH, send.AUTH, null);
 
-  socket.on("disconnecting", () => {
-    log(socket.id, "disconnected");
-    const s = sockets.get(socket.id);
-    for (const room of socket.rooms) {
-      if (room !== socket.id) {
-        let payload = JSON.stringify({ id: socket.id, playerClass: s.playerClass, nick: s.nick, depth: s.depth, pos: s.pos, });
-        socket.to(room).emit(types.SEND.ACTION, actions.LEAVE, payload);
-      }
-    }
-    sockets.delete(socket.id);
-  });
-
-  socket.emit(types.SEND.AUTH, types.SEND.AUTH, null);
-  log("AUTH", `-> ${socket.id}`);
-
-  socket.on("message", (type, data) => {
-    handleMessages(sockets, players, socket, type, data);
-  });
+  socket.on(events.DISCONNECT, () => handleDisconnect(sockets, socket));
+  socket.on(events.AUTH, (data) => handleAuth(sockets, players, socket, data));
+  socket.on(events.MESSAGE, (type, data) => handleMessages(sockets, players, socket, type, data));
+  socket.on(events.ACTION, (type, data) =>  handleActions(sockets, players, socket, type, data));
+  socket.on(events.PLAYERLISTREQUEST, (type, data) =>  handlePlayerListRequest(sockets, players, socket, type, data));
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {
@@ -48,7 +40,7 @@ io.of("/").adapter.on("join-room", (room, id) => {
       players[i] = { id: socket.id, playerClass, nick, depth, pos };
     });
     let payload = JSON.stringify({ players });
-    io.to(id).emit(types.SEND.ACTION, actions.JOINLIST, payload);
+    io.to(id).emit(events.ACTION, send.JOIN_LIST, payload);
   }
 });
 
