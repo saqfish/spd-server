@@ -40,7 +40,16 @@ const handleActions = (...args) => {
         json.pos,
         player.nick
       );
-      sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+      if (json.depth) {
+        sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+      } else {
+        sockets.set(socket.id, {
+          ...sockets.get(socket.id),
+          playerClass: null,
+          depth: null,
+          pos: null,
+        });
+      }
       sortSocketsByDepth(sockets);
     },
     [actions.MOVE]: ({ sockets, players, socket, type, data }) => {
@@ -77,10 +86,12 @@ const joinDepthRoom = (socket, playerClass, depth, pos, nick) => {
       }
     }
   }
-  const room = depthToRoom(depth);
-  socket.join(room);
-  let payload = playerPayload(socket.id, playerClass, nick, depth, pos);
-  socket.to(room).emit(events.ACTION, actions.JOIN, payload);
+  if (depth) {
+    const room = depthToRoom(depth);
+    socket.join(room);
+    let payload = playerPayload(socket.id, playerClass, nick, depth, pos);
+    socket.to(room).emit(events.ACTION, actions.JOIN, payload);
+  }
 };
 
 module.exports = { handleActions };
