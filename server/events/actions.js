@@ -16,10 +16,10 @@ const handleActions = (...args) => {
   let player = sockets.get(socket.id);
   if (!player) socket.disconnect();
   let json = JSON.parse(data);
-  room = depthToRoom(json.depth);
 
   const handler = {
-    [actions.ASC]: ({ sockets, players, socket, type, data }) => {
+    [actions.ASC]: ({ sockets, socket, json }) => {
+      let room = depthToRoom(json.depth);
       log(player.nick, "<- ASCEND", json, `-> ${room}`);
       joinDepthRoom(
         socket,
@@ -31,7 +31,8 @@ const handleActions = (...args) => {
       sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
       sortSocketsByDepth(sockets);
     },
-    [actions.DESC]: ({ sockets, players, socket, type, data }) => {
+    [actions.DESC]: ({ sockets, socket, json }) => {
+      let room = depthToRoom(json.depth);
       log(player.nick, "<- DESCEND", json, `-> ${room}`);
       joinDepthRoom(
         socket,
@@ -52,7 +53,8 @@ const handleActions = (...args) => {
       }
       sortSocketsByDepth(sockets);
     },
-    [actions.MOVE]: ({ sockets, players, socket, type, data }) => {
+    [actions.MOVE]: ({ sockets, player, socket, json }) => {
+      let room = depthToRoom(player.depth);
       log(player.nick, "<- MOVE", json, `-> ${room}`);
       let payload = playerPayload(
         socket.id,
@@ -67,10 +69,10 @@ const handleActions = (...args) => {
   };
   return (handler[type] || handler["default"])({
     sockets,
-    players,
+    player,
     socket,
     type,
-    data,
+    json,
   });
 };
 
