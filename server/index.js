@@ -14,8 +14,6 @@ const sockets = new Map();
 
 const io = require("socket.io")(PORT, {
   serveClient: false,
-  pingInterval: 10000,
-  pingTimeout: 5000,
   cookie: false,
 });
 
