@@ -12,7 +12,7 @@ const actions = {
 };
 
 const handleActions = (...args) => {
-  let [sockets, players, socket, type, data] = args;
+  let [sockets, socket, type, data] = args;
   let player = sockets.get(socket.id);
   if (!player) socket.disconnect();
   let json = JSON.parse(data);

@@ -1,9 +1,6 @@
-const { log } = require("../util");
 const events = require("./events");
-const { SEED } = require("../../defaults");
-const { version } = require("../../package");
 
-const handlePlayerListRequest = (sockets, players, socket, data) => {
+const handlePlayerListRequest = (sockets, socket) => {
   const list = [];
   sockets.forEach((p, i) => {
     const get = (i, o) => {
