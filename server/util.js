@@ -1,4 +1,5 @@
 const log = (k, ...m) => console.log(`${k}:`, ...m);
+let keyval = (obj, i) => [Object.keys(obj)[i],Object.values(obj)[i]];
 
 const playerPayload = (id, playerClass, nick, depth, pos) =>
   JSON.stringify({ id, playerClass, nick, depth, pos });
@@ -23,6 +24,7 @@ const sendMessage = (socket, type, data) => {
 
 module.exports = {
   log,
+  keyval,
   playerPayload,
   sortSocketsByDepth,
   sendMessage,

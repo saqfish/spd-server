@@ -1,15 +1,17 @@
 const { ROOMPREFIX } = require("../../defaults");
+const { log, keyval,singleItemPayload, playerPayload, sortSocketsByDepth } = require("../util");
 const events = require("./events");
-const { log, playerPayload, sortSocketsByDepth } = require("../util");
+const send = require("../send");
+const receive = require("../receive");
 
-const actions = {
-  ASC: 0,
-  DESC: 1,
-  MOVE: 2,
-  JOIN: 3,
-  JOIN_LIST: 4,
-  LEAVE: 5,
-};
+const items = {
+  all: 0,
+  weapon: 1,
+  armor: 2,
+  artifact: 3,
+  misc: 4,
+  ring: 5,
+}
 
 const handleActions = (...args) => {
   let [sockets, socket, type, data] = args;
@@ -18,7 +20,7 @@ const handleActions = (...args) => {
   let json = JSON.parse(data);
 
   const handler = {
-    [actions.ASC]: ({ sockets, socket, json }) => {
+    [receive.ASC]: ({ sockets, socket, json }) => {
       let room = depthToRoom(json.depth);
       log(player.nick, "<- ASCEND", json, `-> ${room}`);
       joinDepthRoom(
@@ -31,7 +33,7 @@ const handleActions = (...args) => {
       sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
       sortSocketsByDepth(sockets);
     },
-    [actions.DESC]: ({ sockets, socket, json }) => {
+    [receive.DESC]: ({ sockets, socket, json }) => {
       let room = depthToRoom(json.depth);
       log(player.nick, "<- DESCEND", json, `-> ${room}`);
       joinDepthRoom(
@@ -53,7 +55,7 @@ const handleActions = (...args) => {
       }
       sortSocketsByDepth(sockets);
     },
-    [actions.MOVE]: ({ sockets, player, socket, json }) => {
+    [receive.MOVE]: ({ sockets, player, socket, json }) => {
       let room = depthToRoom(player.depth);
       log(player.nick, "<- MOVE", json, `-> ${room}`);
       let payload = playerPayload(
@@ -63,9 +65,25 @@ const handleActions = (...args) => {
         json.depth,
         json.pos
       );
-      socket.to(room).emit(events.ACTION, actions.MOVE, payload);
+      socket.to(room).emit(events.ACTION, send.MOVE, payload);
       sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
     },
+    [receive.ITEM]: ({ sockets, player, socket, json }) => {
+      let room = depthToRoom(player.depth);
+      if (json.type) {
+        const s = sockets.get(socket.id);
+        const i = s.items;
+        const kv = keyval(items, json.type);
+        sockets.set(socket.id, { ...s, items: { ...i, [kv[0]]: { ...json } } });
+        log(player.nick, "<- ITEM", kv[0], `-> ${room}`);
+        let payload = JSON.stringify({
+          id: socket.id,
+          ...json
+          });
+        socket.to(room).emit(events.ACTION, send.ITEM, payload);
+      }
+    },
+    "default": ({ json }) => log("UNKNOWN", json)
   };
   return (handler[type] || handler["default"])({
     sockets,
@@ -83,7 +101,7 @@ const joinDepthRoom = (socket, playerClass, depth, pos, nick) => {
     for (r of socket.rooms) {
       if (r != socket.id) {
         let payload = playerPayload(socket.id, playerClass, nick, depth, pos);
-        socket.to(r).emit(events.ACTION, actions.LEAVE, payload);
+        socket.to(r).emit(events.ACTION, send.LEAVE, payload);
         socket.leave(r);
       }
     }
@@ -92,7 +110,7 @@ const joinDepthRoom = (socket, playerClass, depth, pos, nick) => {
     const room = depthToRoom(depth);
     socket.join(room);
     let payload = playerPayload(socket.id, playerClass, nick, depth, pos);
-    socket.to(room).emit(events.ACTION, actions.JOIN, payload);
+    socket.to(room).emit(events.ACTION, send.JOIN, payload);
   }
 };
 

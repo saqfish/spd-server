@@ -31,6 +31,7 @@ io.on("connection", (socket) => {
   socket.on(events.MESSAGE, (type, data) => handleMessages(sockets, socket, type, data));
   socket.on(events.ACTION, (type, data) =>  handleActions(sockets, socket, type, data));
   socket.on(events.PLAYERLISTREQUEST, () =>  handlePlayerListRequest(sockets, socket));
+  socket.on("item", (data) =>  console.log(data));
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {
