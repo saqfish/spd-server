@@ -7,8 +7,8 @@ const handleJoinRoom = (sockets, rooms, id) => {
 		if (r.size) {
 			const players = [...r];
 			players.forEach((p, i) => {
-				let { socket, playerClass, nick, depth, pos } = sockets.get(p);
-				players[i] = { id: socket.id, playerClass, nick, depth, pos };
+				let { socket, playerClass, nick, depth, pos, items } = sockets.get(p);
+				players[i] = { id: socket.id, playerClass, nick, depth, pos, items };
 			});
 			let payload = JSON.stringify({ players });
 			res(payload);

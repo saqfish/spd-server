@@ -12,6 +12,7 @@ const handlePlayerListRequest = (sockets, socket) => {
       nick: get("nick", p),
       playerClass: get("playerClass", p),
       depth: get("depth", p),
+      items: p.items,
     });
   });
   let payload = JSON.stringify({ list });

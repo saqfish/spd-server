@@ -1,5 +1,5 @@
 const { ROOMPREFIX } = require("../../defaults");
-const { log, keyval,singleItemPayload, playerPayload, sortSocketsByDepth } = require("../util");
+const { log, keyval, singleItemPayload, playerPayload, sortSocketsByDepth } = require("../util");
 const events = require("./events");
 const send = require("../send");
 const receive = require("../receive");
@@ -20,20 +20,7 @@ const handleActions = (...args) => {
   let json = JSON.parse(data);
 
   const handler = {
-    [receive.ASC]: ({ sockets, socket, json }) => {
-      let room = depthToRoom(json.depth);
-      log(player.nick, "<- ASCEND", json, `-> ${room}`);
-      joinDepthRoom(
-        socket,
-        json.playerClass,
-        json.depth,
-        json.pos,
-        player.nick
-      );
-      sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
-      sortSocketsByDepth(sockets);
-    },
-    [receive.DESC]: ({ sockets, socket, json }) => {
+    [receive.ASDC]: ({ sockets, socket, json }) => {
       let room = depthToRoom(json.depth);
       log(player.nick, "<- DESCEND", json, `-> ${room}`);
       joinDepthRoom(
@@ -43,16 +30,16 @@ const handleActions = (...args) => {
         json.pos,
         player.nick
       );
-      if (json.depth) {
-        sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
-      } else {
+      if (json.depth == 0) {
         sockets.set(socket.id, {
           ...sockets.get(socket.id),
           playerClass: null,
           depth: null,
           pos: null,
+          items: null,
         });
-      }
+      } else
+        sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
       sortSocketsByDepth(sockets);
     },
     [receive.MOVE]: ({ sockets, player, socket, json }) => {
@@ -70,8 +57,8 @@ const handleActions = (...args) => {
     },
     [receive.ITEM]: ({ sockets, player, socket, json }) => {
       let room = depthToRoom(player.depth);
+      const s = sockets.get(socket.id);
       if (json.type) {
-        const s = sockets.get(socket.id);
         const i = s.items;
         const kv = keyval(items, json.type);
         sockets.set(socket.id, { ...s, items: { ...i, [kv[0]]: { ...json } } });
@@ -79,11 +66,13 @@ const handleActions = (...args) => {
         let payload = JSON.stringify({
           id: socket.id,
           ...json
-          });
+        });
         socket.to(room).emit(events.ACTION, send.ITEM, payload);
+      } else {
+        sockets.set(socket.id, { ...s, items: { ...json } });
       }
     },
-    "default": ({ json }) => log("UNKNOWN", json)
+    "default": ({ type, json }) => log("UNKNOWN", type, json)
   };
   return (handler[type] || handler["default"])({
     sockets,

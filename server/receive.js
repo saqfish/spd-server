@@ -1,6 +1,5 @@
 module.exports = {
-  ASC: 0,
-  DESC: 1,
-  MOVE: 2,
-  ITEM: 3,
+  ASDC: 0,
+  MOVE: 1,
+  ITEM: 2,
 };
