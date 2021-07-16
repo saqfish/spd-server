@@ -14,11 +14,10 @@ Make a `defaults.json` file with the following values:
 	"ROOMPREFIX": "spdnet",
 	"SEED": 123456789,
 	"keys": [
-		{
-			"key": "fewfslf3of0",
-			"nick": "player"
-		}
+		{ "key": "1234567890", "nick": "player1" },
+		{ "key": "abcdefghij", "nick": "player2" }
 	]
+}
   ```
 
 ## Running

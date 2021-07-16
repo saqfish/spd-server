@@ -6,7 +6,6 @@ const { handleMessages } = require("./events/messages");
 const { handleActions } = require("./events/actions");
 const { handleAuth, motd } = require("./middlewares/auth");
 const { PORT, SEED } = require("../defaults");
-const { log } = require("./util");
 const events = require("./events/events");
 const send = require("./send");
 
@@ -25,13 +24,11 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  log(socket.id, "connected");
   socket.emit(events.MOTD, JSON.stringify(motd("", SEED)));
   socket.on(events.DISCONNECT, () => handleDisconnect(sockets, socket));
   socket.on(events.MESSAGE, (type, data) => handleMessages(sockets, socket, type, data));
   socket.on(events.ACTION, (type, data) =>  handleActions(sockets, socket, type, data));
   socket.on(events.PLAYERLISTREQUEST, () =>  handlePlayerListRequest(sockets, socket));
-  socket.on("item", (data) =>  console.log(data));
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {

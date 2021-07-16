@@ -1,5 +1,5 @@
 const { ROOMPREFIX } = require("../../defaults");
-const { log, keyval, singleItemPayload, playerPayload, sortSocketsByDepth } = require("../util");
+const { log, keyval, playerPayload, sortSocketsByDepth } = require("../util");
 const events = require("./events");
 const send = require("../send");
 const receive = require("../receive");
@@ -20,9 +20,9 @@ const handleActions = (...args) => {
   let json = JSON.parse(data);
 
   const handler = {
-    [receive.ASDC]: ({ sockets, socket, json }) => {
+    [receive.INTERLEVEL]: ({ sockets, socket, json }) => {
       let room = depthToRoom(json.depth);
-      log(player.nick, "<- DESCEND", json, `-> ${room}`);
+      log(player.nick, "<- INTERLEVEL", json, `-> ${room}`);
       joinDepthRoom(
         socket,
         json.playerClass,
