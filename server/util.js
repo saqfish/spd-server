@@ -1,3 +1,6 @@
+const path = require("path");
+const fs = require('fs');
+
 const log = (k, ...m) => console.log(`${k}:`, ...m);
 let keyval = (obj, i) => [Object.keys(obj)[i],Object.values(obj)[i]];
 
@@ -22,10 +25,21 @@ const sendMessage = (socket, type, data) => {
   socket.emit("message", JSON.stringify(json));
 };
 
+const readDefaults = () => {
+  return new Promise((res, rej) =>
+    fs.readFile(path.resolve(__dirname, "../defaults.json"), 'utf8', function (err, data) {
+      if (err) {
+        rej({});
+      }
+      res(JSON.parse(data));
+    }));
+}
+
 module.exports = {
   log,
   keyval,
   playerPayload,
   sortSocketsByDepth,
   sendMessage,
+  readDefaults,
 };

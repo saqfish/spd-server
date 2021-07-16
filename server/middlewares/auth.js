@@ -1,21 +1,23 @@
-const { log } = require("../util");
+const { readDefaults, log } = require("../util");
 const { version } = require("../../package");
-const { keys } = require("../../defaults");
 
 const handleAuth = (sockets, socket, token) =>
   new Promise((res, rej) => {
-    const players = new Map();
-    for (p of keys) players.set(p.key, { nick: p.nick });
-    if (players.has(token)) {
-      const player = players.get(token);
-      sockets.set(socket.id, { socket, ...players.get(token) });
-      log(socket.id, "identified as:", player.nick);
-      res();
-    } else {
-      log(socket.id, "rejected auth");
-      const e = new Error("Your key is invalid!");
-      rej(e);
-    }
+    readDefaults().then(defaults => {
+      const { keys } = defaults;
+      const players = new Map();
+      for (p of keys) players.set(p.key, { nick: p.nick });
+      if (players.has(token)) {
+        const player = players.get(token);
+        sockets.set(socket.id, { socket, ...players.get(token) });
+        log(socket.id, "identified as:", player.nick);
+        res();
+      } else {
+        log(socket.id, "rejected auth");
+        const e = new Error("Your key is invalid!");
+        rej(e);
+      }
+    })
   });
 
 const motd = (nick, seed) => ({
