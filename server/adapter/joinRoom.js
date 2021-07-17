@@ -1,5 +1,3 @@
-const send = require("../send");
-
 const handleJoinRoom = (sockets, rooms, id) => {
 	return new Promise(res => {
 		const r = new Set(rooms);

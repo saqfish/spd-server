@@ -4,8 +4,8 @@ const fs = require('fs');
 const log = (k, ...m) => console.log(`${k}:`, ...m);
 let keyval = (obj, i) => [Object.keys(obj)[i],Object.values(obj)[i]];
 
-const playerPayload = (id, playerClass, nick, depth, pos) =>
-  JSON.stringify({ id, playerClass, nick, depth, pos });
+const playerPayload = (id, playerClass, nick, depth, pos, items) =>
+  JSON.stringify({ id, playerClass, nick, depth, pos, items });
 
 const sortSocketsByDepth = (sockets) => {
   const socketsArr = new Map(

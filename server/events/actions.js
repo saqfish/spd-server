@@ -28,6 +28,7 @@ const handleActions = (...args) => {
         json.playerClass,
         json.depth,
         json.pos,
+        player.items,
         player.nick
       );
       if (json.depth == 0) {
@@ -61,14 +62,12 @@ const handleActions = (...args) => {
       if (json.type) {
         const i = s.items;
         const kv = keyval(items, json.type);
+        delete json.type;
         sockets.set(socket.id, { ...s, items: { ...i, [kv[0]]: { ...json } } });
         log(player.nick, "<- ITEM", kv[0], `-> ${room}`);
-        let payload = JSON.stringify({
-          id: socket.id,
-          ...json
-        });
-        socket.to(room).emit(events.ACTION, send.ITEM, payload);
       } else {
+        log(player.nick, "<- ITEMS");
+        delete json.type;
         sockets.set(socket.id, { ...s, items: { ...json } });
       }
     },
@@ -85,7 +84,7 @@ const handleActions = (...args) => {
 
 const depthToRoom = (d) => `${ROOMPREFIX}-${d}`;
 
-const joinDepthRoom = (socket, playerClass, depth, pos, nick) => {
+const joinDepthRoom = (socket, playerClass, depth, pos, items, nick) => {
   if (socket.rooms.size) {
     for (r of socket.rooms) {
       if (r != socket.id) {
@@ -98,7 +97,7 @@ const joinDepthRoom = (socket, playerClass, depth, pos, nick) => {
   if (depth) {
     const room = depthToRoom(depth);
     socket.join(room);
-    let payload = playerPayload(socket.id, playerClass, nick, depth, pos);
+    let payload = playerPayload(socket.id, playerClass, nick, depth, pos, items);
     socket.to(room).emit(events.ACTION, send.JOIN, payload);
   }
 };
