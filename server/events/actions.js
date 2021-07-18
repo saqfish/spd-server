@@ -17,10 +17,10 @@ const handleActions = (...args) => {
   let [sockets, socket, type, data] = args;
   let player = sockets.get(socket.id);
   if (!player) socket.disconnect();
-  let json = JSON.parse(data);
 
   const handler = {
-    [receive.INTERLEVEL]: ({ sockets, socket, json }) => {
+    [receive.INTERLEVEL]: ({ sockets, socket, data }) => {
+      let json = JSON.parse(data);
       let room = depthToRoom(json.depth);
       log(player.nick, "<- INTERLEVEL", json, `-> ${room}`);
       joinDepthRoom(
@@ -43,7 +43,8 @@ const handleActions = (...args) => {
         sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
       sortSocketsByDepth(sockets);
     },
-    [receive.MOVE]: ({ sockets, player, socket, json }) => {
+    [receive.MOVE]: ({ sockets, player, socket, data }) => {
+      let json = JSON.parse(data);
       let room = depthToRoom(player.depth);
       log(player.nick, "<- MOVE", json, `-> ${room}`);
       let payload = playerPayload(
@@ -56,7 +57,8 @@ const handleActions = (...args) => {
       socket.to(room).emit(events.ACTION, send.MOVE, payload);
       sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
     },
-    [receive.ITEM]: ({ sockets, player, socket, json }) => {
+    [receive.ITEM]: ({ sockets, player, socket, data }) => {
+      let json = JSON.parse(data);
       let room = depthToRoom(player.depth);
       const s = sockets.get(socket.id);
       if (json.type) {
@@ -71,6 +73,13 @@ const handleActions = (...args) => {
         sockets.set(socket.id, { ...s, items: { ...json } });
       }
     },
+    [receive.DEATH]: ({ player, socket, data }) => {
+      log(player.nick, "<- DEATH -> all rooms");
+      let json = JSON.parse(data);
+      json.nick = player.nick;
+      let payload = JSON.stringify(json);
+      socket.broadcast.emit(events.ACTION, send.DEATH, payload);
+    },
     "default": ({ type, json }) => log("UNKNOWN", type, json)
   };
   return (handler[type] || handler["default"])({
@@ -78,7 +87,7 @@ const handleActions = (...args) => {
     player,
     socket,
     type,
-    json,
+    data,
   });
 };
 
