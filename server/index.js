@@ -4,6 +4,7 @@ const { handlePlayerListRequest } = require("./events/playerListRequest");
 const { handleDisconnect } = require("./events/disconnect");
 const { handleMessages } = require("./events/messages");
 const { handleActions } = require("./events/actions");
+const { handleTransfer } = require("./events/transfer");
 const { handleAuth, motd } = require("./middlewares/auth");
 const { PORT, SEED } = require("../defaults");
 const events = require("./events/events");
@@ -29,6 +30,9 @@ io.on("connection", (socket) => {
   socket.on(events.MESSAGE, (type, data) => handleMessages(sockets, socket, type, data));
   socket.on(events.ACTION, (type, data) =>  handleActions(sockets, socket, type, data));
   socket.on(events.PLAYERLISTREQUEST, () =>  handlePlayerListRequest(sockets, socket));
+  socket.on(events.TRANSFER, (data) => handleTransfer(socket, sockets, data).then(res =>
+    io.to(res.id).emit(events.TRANSFER, JSON.stringify({className: res.className}))
+  ));
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {
