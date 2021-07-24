@@ -1,4 +1,4 @@
-const { ROOMPREFIX } = require("../../defaults");
+const { roomprefix } = require("../../config");
 const { log, keyval, playerPayload, sortSocketsByDepth } = require("../util");
 const events = require("./events");
 const send = require("../send");
@@ -91,7 +91,7 @@ const handleActions = (...args) => {
   });
 };
 
-const depthToRoom = (d) => `${ROOMPREFIX}-${d}`;
+const depthToRoom = (d) => `${roomprefix}-${d}`;
 
 const joinDepthRoom = (socket, playerClass, depth, pos, items, nick) => {
   if (socket.rooms.size) {

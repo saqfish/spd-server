@@ -25,9 +25,9 @@ const sendMessage = (socket, type, data) => {
   socket.emit("message", JSON.stringify(json));
 };
 
-const readDefaults = () => {
+const readConfig = () => {
   return new Promise((res, rej) =>
-    fs.readFile(path.resolve(__dirname, "../defaults.json"), 'utf8', function (err, data) {
+    fs.readFile(path.resolve(__dirname, "../config.json"), 'utf8', function (err, data) {
       if (err) {
         rej({});
       }
@@ -41,5 +41,5 @@ module.exports = {
   playerPayload,
   sortSocketsByDepth,
   sendMessage,
-  readDefaults,
+  readConfig,
 };

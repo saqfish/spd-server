@@ -1,18 +1,20 @@
 ## Config
 
-Make a `defaults.json` file with the following values:
-1. `PORT`: The port the server will run on
-2. `ROOMPREFIX`: The prefix the server will use on all depth rooms
-3. `SEED`: The seed that will be sent to all players
-4. `keys`: a set of authorized player keys
+Make a `config.json` file with the following values:
+1. `port`: the port the server will run on
+2. `roomprefix`: The prefix the server will use on all depth rooms
+3. `seed`: the seed that will be sent to all players
+4. `itemSharing`: if item sharing should be enabled
+5. `keys`: a set of authorized player keys
 
 ## Example
 
 ```json
 {
-	"PORT": 5800,
-	"ROOMPREFIX": "spdnet",
-	"SEED": 123456789,
+	"port": 5800,
+	"roomprefix": "spdnet",
+	"seed": 123456789,
+	"itemSharing": true,
 	"keys": [
 		{ "key": "1234567890", "nick": "player1" },
 		{ "key": "abcdefghij", "nick": "player2" }

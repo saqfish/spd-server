@@ -6,13 +6,13 @@ const { handleMessages } = require("./events/messages");
 const { handleActions } = require("./events/actions");
 const { handleTransfer } = require("./events/transfer");
 const { handleAuth, motd } = require("./middlewares/auth");
-const { PORT, SEED } = require("../defaults");
+const { port, seed, itemSharing } = require("../config");
 const events = require("./events/events");
 const send = require("./send");
 
 const sockets = new Map();
 
-const io = require("socket.io")(PORT, {
+const io = require("socket.io")(port, {
   serveClient: false,
   cookie: false,
 });
@@ -25,14 +25,16 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  socket.emit(events.MOTD, JSON.stringify(motd("", SEED)));
+  socket.emit(events.MOTD, JSON.stringify(motd("", seed)));
   socket.on(events.DISCONNECT, () => handleDisconnect(sockets, socket));
   socket.on(events.MESSAGE, (type, data) => handleMessages(sockets, socket, type, data));
   socket.on(events.ACTION, (type, data) =>  handleActions(sockets, socket, type, data));
   socket.on(events.PLAYERLISTREQUEST, () =>  handlePlayerListRequest(sockets, socket));
-  socket.on(events.TRANSFER, (data) => handleTransfer(socket, sockets, data).then(res =>
-    io.to(res.id).emit(events.TRANSFER, JSON.stringify({className: res.className}))
-  ));
+  socket.on(events.TRANSFER, (data, cb) => handleTransfer(socket, sockets, data).then(res => {
+    if (itemSharing)
+      io.to(res.id).emit(events.TRANSFER, JSON.stringify({ className: res.className }));
+    cb(itemSharing);
+  }));
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {

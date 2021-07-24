@@ -1,10 +1,10 @@
-const { readDefaults, log } = require("../util");
 const { version } = require("../../package");
+const { log, readConfig } = require("../util");
 
 const handleAuth = (sockets, socket, token) =>
   new Promise((res, rej) => {
-    readDefaults().then(defaults => {
-      const { keys } = defaults;
+    readConfig().then(config => {
+      const { keys } = config;
       const players = new Map();
       for (p of keys) players.set(p.key, { nick: p.nick });
       if (players.has(token)) {
