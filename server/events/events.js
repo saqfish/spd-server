@@ -1,8 +1,9 @@
 module.exports = {
+    ACTION: "action",
+    ADMIN: "admin",
+    DISCONNECT: "disconnecting",
     MESSAGE: "message",
     MOTD: "motd",
-    ACTION: "action",
     PLAYERLISTREQUEST: "playerlistrequest",
-    DISCONNECT: "disconnecting",
-    TRANSFER: "transfer"
+    TRANSFER: "transfer",
 };

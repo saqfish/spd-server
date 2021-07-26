@@ -1,4 +1,3 @@
-const { version } = require("../../package");
 const { log, readConfig } = require("../util");
 
 const handleAuth = (sockets, socket, token) =>
@@ -20,12 +19,6 @@ const handleAuth = (sockets, socket, token) =>
     })
   });
 
-const motd = (nick, seed) => ({
-  motd: `Hello ${nick}! Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
-  seed,
-});
-
 module.exports = {
   handleAuth,
-  motd
 };
