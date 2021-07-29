@@ -25,9 +25,13 @@ io.on("connection", (socket) => {
   socket.on(events.PLAYERLISTREQUEST, () =>  handler.handlePlayerListRequest(sockets, socket));
   socket.on(events.TRANSFER, (data, cb) => handler.handleTransfer(socket, sockets, data).then(res => {
     if (itemSharing)
-      io.to(res.id).emit(events.TRANSFER, JSON.stringify({ className: res.className }));
+      io.to(res.id).emit(events.TRANSFER, JSON.stringify(res));
     cb(itemSharing);
   }));
+  socket.on(events.CHAT, (message) => {
+    let player = sockets.get(socket.id);
+    io.emit(events.CHAT, socket.id, player.nick, message);
+  });
 });
 
 io.of("/").adapter.on("join-room", (room, id) => {
