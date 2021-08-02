@@ -1,6 +1,6 @@
 const events = require("./events");
 
-const handlePlayerListRequest = (sockets, socket) => {
+const playerListRequest = (sockets, socket) => {
   const list = [];
   sockets.forEach((p, i) => {
     const get = (i, o) => {
@@ -19,6 +19,4 @@ const handlePlayerListRequest = (sockets, socket) => {
   socket.emit(events.PLAYERLISTREQUEST, payload);
 };
 
-module.exports = {
-  handlePlayerListRequest,
-};
+module.exports = playerListRequest;

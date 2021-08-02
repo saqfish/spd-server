@@ -1,6 +1,6 @@
 const { log } = require("../util");
 
-const handleTransfer = (socket, sockets, data) =>
+const transfer = (socket, sockets, data) =>
    new Promise((res, rej) => {
       const json = JSON.parse(data);
       log(socket.id, "<- TRANSFER", json, `-> ${json.id}`);
@@ -8,4 +8,4 @@ const handleTransfer = (socket, sockets, data) =>
    });
 
 
-module.exports = { handleTransfer };
+module.exports =  transfer ;

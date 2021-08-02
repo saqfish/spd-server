@@ -1,7 +1,7 @@
 const { log } = require("../util");
 
-const handleAdmin = (data) => {
+const admin = (data) => {
 	log("ADMIN", data);
 };
 
-module.exports = { handleAdmin };
+module.exports =  admin;

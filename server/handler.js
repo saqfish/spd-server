@@ -1,28 +1,49 @@
+const joinRoom = require("./adapter/joinRoom");
+const leaveRoom = require("./adapter/leaveRoom");
+const playerListRequest = require("./events/playerListRequest");
+const disconnect = require("./events/disconnect");
+const actions = require("./events/actions");
+const transfer = require("./events/transfer");
+const auth = require("./middlewares/auth");
+const admin = require("./events/admin");
+
+const events = require("./events/events");
+const send = require("./send");
+
 const { version } = require("../package");
-const { handleJoinRoom } = require("./adapter/joinRoom");
-const { handleLeaveRoom } = require("./adapter/leaveRoom");
-const { handlePlayerListRequest } = require("./events/playerListRequest");
-const { handleDisconnect } = require("./events/disconnect");
-const { handleActions } = require("./events/actions");
-const { handleTransfer } = require("./events/transfer");
-const { handleAuth } = require("./middlewares/auth");
-const { handleAdmin } = require("./events/admin");
-const { handleChat } = require("./events/chat");
 
-const motd = (seed) => (JSON.stringify({
-    motd: `Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
-    seed,
-}));
-
-module.exports = {
-    handleJoinRoom,
-    handleLeaveRoom,
-    handlePlayerListRequest,
-    handleDisconnect,
-    handleActions,
-    handleTransfer,
-    handleAuth,
-    handleAdmin,
-    handleChat,
-    motd
+const handler = (io) => {
+    hio = io;
+    return {
+        handlePlayerListRequest: playerListRequest,
+        handleDisconnect: disconnect,
+        handleActions: actions,
+        handleAdmin: admin,
+        handleLeaveRoom: leaveRoom,
+        handleJoinRoom: (sockets, rooms, id) =>
+            joinRoom(sockets, rooms, id).then(res => hio.to(id).emit(events.ACTION, send.JOIN_LIST, res))
+        ,
+        handleTransfer: (itemSharing, socket, sockets, data, cb) => {
+            transfer(socket, sockets, data).then(res => {
+                if (itemSharing)
+                    hio.to(res.id).emit(events.TRANSFER, JSON.stringify(res));
+                cb(itemSharing);
+            });
+        },
+        handleAuth: (sockets, socket, token, next) => {
+            auth(sockets, socket, token)
+                .then(() => next())
+                .catch((e) => next(e));
+        },
+        handleChat: (sockets, socket, message) => {
+            let player = sockets.get(socket.id);
+            hio.emit(events.CHAT, socket.id, player.nick, message);
+        },
+        motd: (seed) => (JSON.stringify({
+            motd: `Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
+            seed,
+        })),
+    }
 }
+
+module.exports = handler;

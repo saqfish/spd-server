@@ -1,4 +1,4 @@
-const handleJoinRoom = (sockets, rooms, id) => {
+const joinRoom = (sockets, rooms, id) => {
 	return new Promise(res => {
 		const r = new Set(rooms);
 		r.delete(id);
@@ -14,4 +14,5 @@ const handleJoinRoom = (sockets, rooms, id) => {
 	});
 };
 
-module.exports = { handleJoinRoom };
+module.exports = joinRoom;
+

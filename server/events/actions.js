@@ -13,7 +13,7 @@ const items = {
   ring: 5,
 }
 
-const handleActions = (...args) => {
+const actions = (...args) => {
   let [sockets, socket, type, data] = args;
   let player = sockets.get(socket.id);
   if (!player) socket.disconnect();
@@ -76,9 +76,13 @@ const handleActions = (...args) => {
     [receive.DEATH]: ({ player, socket, data }) => {
       log(player.nick, "<- DEATH -> all rooms");
       let json = JSON.parse(data);
-      json.nick = player.nick;
-      let payload = JSON.stringify(json);
-      socket.broadcast.emit(events.ACTION, send.DEATH, payload);
+      let payload = JSON.stringify({msg: `${player.nick} ${json.cause}`});
+      socket.broadcast.emit(events.ACTION, send.GLOG, payload);
+    },
+    [receive.BOSSKILL]: ({ player, socket, data }) => {
+      log(player.nick, "<-BOSSKILL -> all rooms");
+      let payload = JSON.stringify({msg: `${player.nick} kiled ${data}`});
+      socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     "default": ({ type, json }) => log("UNKNOWN", type, json)
   };
@@ -111,4 +115,4 @@ const joinDepthRoom = (socket, playerClass, depth, pos, items, nick) => {
   }
 };
 
-module.exports = { handleActions };
+module.exports = actions;

@@ -4,5 +4,5 @@ module.exports = {
   JOIN_LIST: 2,
   LEAVE: 3,
   ITEM: 4,
-  DEATH: 5,
+  GLOG: 5,
 };

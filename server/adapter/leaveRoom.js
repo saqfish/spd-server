@@ -1,4 +1,4 @@
-const handleLeaveRoom = (room, id) => {
+const leaveRoom = (room, id) => {
 };
 
-module.exports = { handleLeaveRoom };
+module.exports = leaveRoom;

@@ -1,6 +1,6 @@
 const { log, readConfig } = require("../util");
 
-const handleAuth = (sockets, socket, token) =>
+const auth = (sockets, socket, token) =>
   new Promise((res, rej) => {
     readConfig().then(config => {
       const { keys } = config;
@@ -19,6 +19,4 @@ const handleAuth = (sockets, socket, token) =>
     })
   });
 
-module.exports = {
-  handleAuth,
-};
+module.exports = auth;
