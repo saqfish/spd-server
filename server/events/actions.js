@@ -1,5 +1,5 @@
 const { roomprefix } = require("../../config");
-const { log, keyval, playerPayload, sortSocketsByDepth } = require("../util");
+const { log, keyval, writeRecords, playerPayload, sortSocketsByDepth } = require("../util");
 const events = require("./events");
 const send = require("../send");
 const receive = require("../receive");
@@ -14,7 +14,7 @@ const items = {
 }
 
 const actions = (...args) => {
-  let [sockets, socket, type, data] = args;
+  let [sockets, socket, records, type, data] = args;
   let player = sockets.get(socket.id);
   if (!player) socket.disconnect();
 
@@ -80,8 +80,16 @@ const actions = (...args) => {
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     [receive.BOSSKILL]: ({ player, socket, data }) => {
-      log(player.nick, "<-BOSSKILL -> all rooms");
+      log(player.nick, "<- BOSSKILL -> all rooms");
       let payload = JSON.stringify({msg: `${player.nick} kiled ${data}`});
+      socket.broadcast.emit(events.ACTION, send.GLOG, payload);
+    },
+    [receive.WIN]: ({ player, socket, records }) => {
+      log(player.nick, "<- WIN -> all rooms");
+      let wins = records[player.nick] || 0;
+      records[player.nick] = wins+1;
+      writeRecords(records);
+      let payload = JSON.stringify({msg: `${player.nick} wins the game!`});
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     "default": ({ type, json }) => log("UNKNOWN", type, json)
@@ -90,6 +98,7 @@ const actions = (...args) => {
     sockets,
     player,
     socket,
+    records,
     type,
     data,
   });

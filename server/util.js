@@ -29,11 +29,37 @@ const readConfig = () => {
   return new Promise((res, rej) =>
     fs.readFile(path.resolve(__dirname, "../config.json"), 'utf8', function (err, data) {
       if (err) {
+        log("CONFIG", err);
         rej({});
       }
       res(JSON.parse(data));
     }));
 }
+
+const readRecords = (records) => {
+  return new Promise((res, rej) =>
+    fs.readFile(path.resolve(__dirname, "./records.json"), 'utf8', function (err, data) {
+      if (err) {
+        log("CONFIG", err);
+        rej();
+      }
+      loaded = JSON.parse(data);
+      Object.keys(loaded).forEach(record => records[record] = loaded[record]);
+      res(`Records loaded: ${Object.keys(records).length}`);
+    }));
+}
+
+const writeRecords = (records) => {
+  return new Promise((res, rej) =>
+    fs.writeFile(path.resolve(__dirname, "./records.json"), JSON.stringify(records), function (err) {
+      if (err) {
+        rej();
+      }
+      res();
+    }));
+}
+
+
 
 module.exports = {
   log,
@@ -42,4 +68,6 @@ module.exports = {
   sortSocketsByDepth,
   sendMessage,
   readConfig,
+  readRecords,
+  writeRecords,
 };

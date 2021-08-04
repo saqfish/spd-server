@@ -11,13 +11,17 @@ const events = require("./events/events");
 const send = require("./send");
 
 const { version } = require("../package");
+const { readRecords, log } = require("./util");
 
 const handler = (io) => {
     hio = io;
+    const records = {};
+    readRecords(records).then(res => log("HANDLER", res));
+
     return {
         handlePlayerListRequest: playerListRequest,
         handleDisconnect: disconnect,
-        handleActions: actions,
+        handleActions:(sockets, socket, type, data) => actions(sockets, socket, records, type, data),
         handleAdmin: admin,
         handleLeaveRoom: leaveRoom,
         handleJoinRoom: (sockets, rooms, id) =>

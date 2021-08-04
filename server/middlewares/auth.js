@@ -3,9 +3,9 @@ const { log, readConfig } = require("../util");
 const auth = (sockets, socket, token) =>
   new Promise((res, rej) => {
     readConfig().then(config => {
-      const { keys } = config;
+      const { accounts } = config;
       const players = new Map();
-      for (p of keys) players.set(p.key, { nick: p.nick });
+      for (p of accounts) players.set(p.key, { nick: p.nick });
       if (players.has(token)) {
         const player = players.get(token);
         sockets.set(socket.id, { socket, ...players.get(token) });

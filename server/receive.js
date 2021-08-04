@@ -4,4 +4,5 @@ module.exports = {
   ITEM: 2,
   DEATH: 3,
   BOSSKILL: 4,
+  WIN: 5,
 };
