@@ -5,4 +5,5 @@ module.exports = {
   DEATH: 3,
   BOSSKILL: 4,
   WIN: 5,
+  RECORDS: 6,
 };

@@ -21,6 +21,7 @@ io.on("connection", (socket) => {
   socket.on(events.ADMIN, () => EventHandler.handleAdmin());
   socket.on(events.DISCONNECT, () => EventHandler.handleDisconnect(sockets, socket));
   socket.on(events.PLAYERLISTREQUEST, () => EventHandler.handlePlayerListRequest(sockets, socket));
+  socket.on(events.RECORDS, () => EventHandler.handleRecordsRequest(socket));
   socket.on(events.ACTION, (type, data) => EventHandler.handleActions(sockets, socket, type, data));
   socket.on(events.TRANSFER, (data, cb) => EventHandler.handleTransfer(itemSharing, socket, sockets, data, cb));
   socket.on(events.CHAT, (message) => EventHandler.handleChat(sockets, socket, message));

@@ -7,4 +7,5 @@ module.exports = {
     MOTD: "motd",
     PLAYERLISTREQUEST: "playerlistrequest",
     TRANSFER: "transfer",
+    RECORDS: "records",
 };

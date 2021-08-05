@@ -86,8 +86,14 @@ const actions = (...args) => {
     },
     [receive.WIN]: ({ player, socket, records }) => {
       log(player.nick, "<- WIN -> all rooms");
-      let wins = records[player.nick] || 0;
-      records[player.nick] = wins+1;
+      let wins;
+      if (records[player.nick]) {
+        wins = records[player.nick].wins || 0;
+      } else records[player.nick] = {};
+      records[player.nick].wins = wins + 1;
+      records[player.nick].playerClass = player.playerClass;
+      records[player.nick].depth = player.depth;
+      records[player.nick].items = player.items;
       writeRecords(records);
       let payload = JSON.stringify({msg: `${player.nick} wins the game!`});
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);

@@ -1,6 +1,7 @@
 const joinRoom = require("./adapter/joinRoom");
 const leaveRoom = require("./adapter/leaveRoom");
 const playerListRequest = require("./events/playerListRequest");
+const recordsRequest = require("./events/recordsRequest");
 const disconnect = require("./events/disconnect");
 const actions = require("./events/actions");
 const transfer = require("./events/transfer");
@@ -21,9 +22,10 @@ const handler = (io) => {
     return {
         handlePlayerListRequest: playerListRequest,
         handleDisconnect: disconnect,
-        handleActions:(sockets, socket, type, data) => actions(sockets, socket, records, type, data),
         handleAdmin: admin,
         handleLeaveRoom: leaveRoom,
+        handleRecordsRequest: (socket) => recordsRequest(socket, records),
+        handleActions:(sockets, socket, type, data) => actions(sockets, socket, records, type, data),
         handleJoinRoom: (sockets, rooms, id) =>
             joinRoom(sockets, rooms, id).then(res => hio.to(id).emit(events.ACTION, send.JOIN_LIST, res))
         ,

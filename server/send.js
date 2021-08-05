@@ -5,4 +5,5 @@ module.exports = {
   LEAVE: 3,
   ITEM: 4,
   GLOG: 5,
+  RECORDS_LIST: 5,
 };
