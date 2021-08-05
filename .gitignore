@@ -8,5 +8,6 @@ client
 *.swp
 *.swo
 
-# config
+# local config & data
 config.json
+server/records.json
