@@ -86,10 +86,9 @@ const actions = (...args) => {
     },
     [receive.WIN]: ({ player, socket, records }) => {
       log(player.nick, "<- WIN -> all rooms");
-      let wins;
       if (records[player.nick]) {
-        wins = records[player.nick].wins || 0;
-      } else records[player.nick] = {};
+      } else  records[player.nick] = {};
+      let wins = records[player.nick].wins || 0;
       records[player.nick].wins = wins + 1;
       records[player.nick].playerClass = player.playerClass;
       records[player.nick].depth = player.depth;
