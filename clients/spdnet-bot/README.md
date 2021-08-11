@@ -14,3 +14,7 @@ Add a `config.json` file with the proper information.
 	}
 }
 ```
+
+### Running
+
+`node bot.js`
