@@ -5,7 +5,7 @@ Make a `config.json` file with the following values:
 2. `roomprefix`: The prefix the server will use on all depth rooms
 3. `seed`: the seed that will be sent to all players
 4. `itemSharing`: if item sharing should be enabled
-5. `keys`: a set of authorized player keys
+5. `accounts`: a set of authorized player keys
 
 ## Example
 
@@ -15,7 +15,7 @@ Make a `config.json` file with the following values:
 	"roomprefix": "spdnet",
 	"seed": 123456789,
 	"itemSharing": true,
-	"keys": [
+	"accounts": [
 		{ "key": "1234567890", "nick": "player1" },
 		{ "key": "abcdefghij", "nick": "player2" }
 	]
