@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/saqfish/spd-server#readme",
   "dependencies": {
+    "discord.js": "^13.0.1",
     "socket.io": "^3.1.2",
     "socket.io-client": "^3.1.3"
   }
