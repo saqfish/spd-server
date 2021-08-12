@@ -81,7 +81,7 @@ const actions = (...args) => {
     },
     [receive.BOSSKILL]: ({ player, socket, data }) => {
       log(player.nick, "<- BOSSKILL -> all rooms");
-      let payload = JSON.stringify({msg: `${player.nick} kiled ${data}`});
+      let payload = JSON.stringify({msg: `${player.nick} killed ${data}`});
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     [receive.WIN]: ({ player, socket, records }) => {
