@@ -9,4 +9,5 @@ client
 *.swo
 
 # data files
-server/data
+server/data/config.json
+server/data/records.json
