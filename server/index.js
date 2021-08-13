@@ -1,4 +1,4 @@
-const { port, seed, itemSharing } = require("../config");
+const { port, seed, itemSharing } = require("./data/config");
 const handler = require("./handler");
 const events = require("./events/events");
 

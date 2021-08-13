@@ -1,4 +1,4 @@
-const { roomprefix } = require("../../config");
+const { roomprefix } = require("../data/config");
 const { log, keyval, writeRecords, playerPayload, sortSocketsByDepth } = require("../util");
 const events = require("./events");
 const send = require("../send");

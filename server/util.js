@@ -27,7 +27,7 @@ const sendMessage = (socket, type, data) => {
 
 const readConfig = () => {
   return new Promise((res, rej) =>
-    fs.readFile(path.resolve(__dirname, "../config.json"), 'utf8', function (err, data) {
+    fs.readFile(path.resolve(__dirname, "./data/config.json"), 'utf8', function (err, data) {
       if (err) {
         log("CONFIG", err);
         rej({});
@@ -38,7 +38,7 @@ const readConfig = () => {
 
 const readRecords = (records) => {
   return new Promise((res, rej) =>
-    fs.readFile(path.resolve(__dirname, "./records.json"), 'utf8', function (err, data) {
+    fs.readFile(path.resolve(__dirname, "./data/records.json"), 'utf8', function (err, data) {
       if (err) {
         log("CONFIG", err);
         rej();
@@ -51,7 +51,7 @@ const readRecords = (records) => {
 
 const writeRecords = (records) => {
   return new Promise((res, rej) =>
-    fs.writeFile(path.resolve(__dirname, "./records.json"), JSON.stringify(records), function (err) {
+    fs.writeFile(path.resolve(__dirname, "./data/records.json"), JSON.stringify(records), function (err) {
       if (err) {
         rej();
       }
