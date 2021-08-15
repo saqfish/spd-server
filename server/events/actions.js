@@ -81,7 +81,7 @@ const actions = (...args) => {
     },
     [receive.BOSSKILL]: ({ player, socket, data }) => {
       log(player.nick, "<- BOSSKILL -> all rooms");
-      let payload = JSON.stringify({msg: `${player.nick} killed ${data}`});
+      let payload = JSON.stringify({msg: `${player.nick} defeated ${data}!`});
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     [receive.WIN]: ({ player, socket, records }) => {
@@ -94,7 +94,7 @@ const actions = (...args) => {
       records[player.nick].depth = player.depth;
       records[player.nick].items = player.items;
       writeRecords(records);
-      let payload = JSON.stringify({msg: `${player.nick} wins the game!`});
+      let payload = JSON.stringify({msg: `${player.nick} won the game!`});
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     "default": ({ type, json }) => log("UNKNOWN", type, json)
