@@ -8,4 +8,6 @@ module.exports = {
     PLAYERLISTREQUEST: "playerlistrequest",
     TRANSFER: "transfer",
     RECORDS: "records",
+    JOIN: "join",
+    LEAVE: "leave",
 };

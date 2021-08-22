@@ -32,8 +32,9 @@ client.on('ready', () => {
 		console.log(err);
 	});
 
-	socket.on("chat", (id, nick, message) => console.log(`${nick}: ${message}`));
-
+	socket.on("chat", (id, nick, message) => send(`${nick}: ${message}`));
+	socket.on("join", (nick) => send(`${nick} has joined`));
+	socket.on("leave", (nick) => send(`${nick} has left`));
 
 	const actions = {
 		JOIN: 1,
@@ -51,4 +52,8 @@ client.on('ready', () => {
 		}
 		process[type](JSON.parse(data));
 	});
+});
+
+client.on('message', message => {
+	console.log(message);
 });

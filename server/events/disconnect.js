@@ -1,8 +1,8 @@
-const {log} = require("../util");
+const { log } = require("../util");
 const events = require("./events");
 const send = require("../send");
 
-const disconnect = (sockets, socket ) => {
+const disconnect = (sockets, socket) => {
   log(socket.id, "disconnected");
   const s = sockets.get(socket.id);
   for (const room of socket.rooms) {
@@ -17,7 +17,8 @@ const disconnect = (sockets, socket ) => {
       socket.to(room).emit(events.ACTION, send.LEAVE, payload);
     }
   }
+  socket.broadcast.emit(events.LEAVE, s.nick);
   sockets.delete(socket.id);
-}
+};
 
 module.exports = disconnect;
