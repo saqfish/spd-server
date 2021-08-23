@@ -6,7 +6,7 @@ const disconnect = require("./events/disconnect");
 const actions = require("./events/actions");
 const transfer = require("./events/transfer");
 const admin = require("./events/admin");
-const {auth} = require("./middlewares/auth");
+const { auth } = require("./middlewares/auth");
 
 const events = require("./events/events");
 const send = require("./send");
@@ -38,7 +38,9 @@ const handler = (io) => {
         cb(itemSharing);
       });
     },
-    handleAuth: (sockets, socket, token, next) => {
+    handleAuth: (sockets, socket, acceptableVersion, token, next) => {
+      if (!acceptableVersion) next(new Error("Your game is outdated. Please update your version to play."));
+
       auth(sockets, socket, token)
         .then(() => {
           let player = sockets.get(socket.id);

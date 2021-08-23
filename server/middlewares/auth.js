@@ -11,15 +11,19 @@ const auth = (sockets, socket, token) =>
     readConfig().then((config) => {
       const { accounts } = config;
       const players = new Map();
+
       for (p of accounts)
         players.set(p.key, { nick: p.nick, role: getRole(p) });
+
       if (players.has(token)) {
         const player = players.get(token);
         sockets.set(socket.id, { socket, ...player });
+
         log(socket.id, `${player.nick} identified`, player.role);
         res();
       } else {
         log(socket.id, "rejected auth");
+
         const e = new Error("Your key is invalid!");
         rej(e);
       }

@@ -1,4 +1,4 @@
-const { port, seed, itemSharing } = require("./data/config");
+const { port, minVersion, seed, itemSharing } = require("./data/config");
 const handler = require("./handler");
 const events = require("./events/events");
 
@@ -12,8 +12,11 @@ const io = require("socket.io")(port, {
 const EventHandler = handler(io);
 
 io.use((socket, next) => {
-  const token = socket.handshake.auth.token;
-  EventHandler.handleAuth(sockets, socket, token, next);
+  const {query, auth} = socket.handshake;
+  const token = auth.token;
+  const version = query.version;
+  const acceptableVersion = query.version >= minVersion;
+  EventHandler.handleAuth(sockets, socket, acceptableVersion, token, next);
 });
 
 io.on("connection", (socket) => {
