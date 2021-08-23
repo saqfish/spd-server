@@ -11,3 +11,6 @@ client
 # data files
 server/data/config.json
 server/data/records.json
+
+# custom update script
+update.sh
