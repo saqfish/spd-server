@@ -5,8 +5,8 @@ const recordsRequest = require("./events/recordsRequest");
 const disconnect = require("./events/disconnect");
 const actions = require("./events/actions");
 const transfer = require("./events/transfer");
-const auth = require("./middlewares/auth");
 const admin = require("./events/admin");
+const {auth} = require("./middlewares/auth");
 
 const events = require("./events/events");
 const send = require("./send");
@@ -42,7 +42,7 @@ const handler = (io) => {
       auth(sockets, socket, token)
         .then(() => {
           let player = sockets.get(socket.id);
-          hio.emit(events.JOIN, player.nick);
+          hio.emit(events.JOIN, player.nick, socket.id);
           next();
         })
         .catch((e) => next(e));

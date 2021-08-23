@@ -17,7 +17,7 @@ const disconnect = (sockets, socket) => {
       socket.to(room).emit(events.ACTION, send.LEAVE, payload);
     }
   }
-  socket.broadcast.emit(events.LEAVE, s.nick);
+  socket.broadcast.emit(events.LEAVE, s.nick, socket.id);
   sockets.delete(socket.id);
 };
 
