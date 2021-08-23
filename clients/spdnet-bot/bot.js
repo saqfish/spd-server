@@ -1,59 +1,66 @@
-const {Client, Intents} = require('discord.js');
-const {discord, server} = require('./config.json');
+const { Client, Intents } = require("discord.js");
+const { discord, server } = require("./config.json");
 const io = require("socket.io-client");
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+// Util
+const send = (text) => {
+  if (channel && ready) channel.send(text);
+};
 
-client.login(discord.key).catch((err) => {
-	console.log(err.message);
+// Discord client
+const client = new Client({
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 
+// Globals
 let channel = null;
 let ready = false;
 
-const send = (text) => {
-	if(channel && ready)
-		channel.send(text);
-}
-
-client.on('ready', () => {
-	channel = client.channels.fetch(discord.channelId).then(c => {
-		channel = c;
-		ready = true;
-	});
-
-	const socket = io(server.address, {
-		auth: {
-			token: server.key,
-		},
-	});
-
-	socket.on("connect_error", (err) => {
-		console.log(err);
-	});
-
-	socket.on("chat", (id, nick, message) => send(`${nick}: ${message}`));
-	socket.on("join", (nick) => send(`${nick} has joined`));
-	socket.on("leave", (nick) => send(`${nick} has left`));
-
-	const actions = {
-		JOIN: 1,
-		JOIN_LIST: 2,
-		LEAVE: 3,
-		// only using GLOG for now
-		GLOG: 5,
-	};
-
-	socket.on("action", (type, data) => {
-		const process = {
-			[actions.GLOG]: (data) => {
-				send(data.msg);
-			}
-		}
-		process[type](JSON.parse(data));
-	});
+// Begin bot
+client.login(discord.key).catch((err) => {
+  console.log(err.message);
 });
 
-client.on('message', message => {
-	console.log(message);
+client.on("ready", () => {
+  channel = client.channels.fetch(discord.channelId).then((c) => {
+    channel = c;
+    ready = true;
+  });
+
+  const socket = io(server.address, {
+    query: { version: 9999 },
+    auth: { token: server.key },
+  });
+
+  const handler = socketHandler();
+
+  socket.on("chat", (id, nick, message) => handler.handleChat(id, nick, message));
+  socket.on("join", (nick) => handler.handleJoin(nick));
+  socket.on("leave", (nick) => handler.handleLeave(nick));
+  socket.on("action", (type, data) => handler.handleAction(type, data));
+  socket.on("connect_error", (err) => handler.handleConnectionError(err));
+});
+
+// Socket handler
+const socketHandler = () => {
+  return {
+    handleConnectionError: (err) => console.log(err),
+    handleChat: (id, nick, message) => send(`**${nick}**: ${message}`),
+    handleJoin: (nick) => send(`*${nick} has joined*`),
+    handleLeave: (nick) => send(`*${nick} has left*`),
+    handleAction: (type, data) => {
+      const actions = {
+        GLOG: 5,
+      };
+      const process = {
+        [actions.GLOG]: (data) => send(`*${data.msg}*`),
+      };
+      process[type](JSON.parse(data));
+    },
+  };
+};
+
+// Bot events
+client.on("message", (message) => {
+  //console.log(message);
 });
