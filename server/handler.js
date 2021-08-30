@@ -35,7 +35,7 @@ const handler = (io) => {
       transfer(socket, sockets, data).then((res) => {
         if (itemSharing)
           hio.to(res.id).emit(events.TRANSFER, JSON.stringify(res));
-        cb(itemSharing);
+        if(cb) cb(itemSharing);
       });
     },
     handleAuth: (sockets, socket, acceptableVersion, token, next) => {
