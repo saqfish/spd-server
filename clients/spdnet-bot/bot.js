@@ -15,6 +15,7 @@ const client = new Client({
 // Globals
 let channel = null;
 let ready = false;
+let socket;
 const botName = "spdnet-bot";
 const players = new Map();
 
@@ -29,7 +30,7 @@ client.on("ready", () => {
     ready = true;
   });
 
-  const socket = io(server.address, {
+  socket = io(server.address, {
     query: { version: 9999 },
     auth: { token: server.key },
   });
@@ -39,8 +40,8 @@ client.on("ready", () => {
   socket.on("chat", (id, nick, message) =>
     handler.handleChat(id, nick, message)
   );
-  socket.on("join", (nick) => handler.handleJoin(nick));
-  socket.on("leave", (nick) => handler.handleLeave(nick));
+  socket.on("join", (nick, id) => handler.handleJoin(nick, id));
+  socket.on("leave", (nick, id) => handler.handleLeave(nick, id));
   socket.on("action", (type, data) => handler.handleAction(type, data));
   socket.on("connect_error", (err) => handler.handleConnectionError(err));
 });
@@ -50,9 +51,9 @@ const socketHandler = () => {
   return {
     handleConnectionError: (err) => console.log(err),
     handleChat: (id, nick, message) => send(`**${nick}**: ${message}`),
-    handleJoin: (nick, role) => {
-      players.set(nick, role);
-      send(`*${nick} has joined*`);
+    handleJoin: (nick, id) => {
+      players.set(nick, id);
+      send(`*${nick} has joined* id: ${id}`);
     },
     handleLeave: (nick) => {
       players.delete(nick);
@@ -82,6 +83,22 @@ const cmd = (text) => {
         const list = Array.from(players.keys()).join(", ");
         send(list);
       } else send("No one is playing");
+    },
+    give: (args) => {
+      const player = players.get(args[0]);
+      if (player) {
+        socket.emit(
+          "transfer",
+          JSON.stringify({
+            className: args[1],
+            cursed: false,
+            id: player,
+            identified: true,
+            level: args[2],
+          }),
+          () => send("Sent")
+        );
+      } else send(`No player: ${args[0]}`);
     },
     default: () => {
       // Unlisted command action here
