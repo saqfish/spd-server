@@ -53,7 +53,7 @@ const socketHandler = () => {
     handleChat: (id, nick, message) => send(`**${nick}**: ${message}`),
     handleJoin: (nick, id) => {
       players.set(nick, id);
-      send(`*${nick} has joined* id: ${id}`);
+      send(`*${nick} has joined*`);
     },
     handleLeave: (nick) => {
       players.delete(nick);
