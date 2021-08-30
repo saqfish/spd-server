@@ -15,6 +15,8 @@ const client = new Client({
 // Globals
 let channel = null;
 let ready = false;
+const botName = "spdnet-bot";
+const players = new Map();
 
 // Begin bot
 client.login(discord.key).catch((err) => {
@@ -34,7 +36,9 @@ client.on("ready", () => {
 
   const handler = socketHandler();
 
-  socket.on("chat", (id, nick, message) => handler.handleChat(id, nick, message));
+  socket.on("chat", (id, nick, message) =>
+    handler.handleChat(id, nick, message)
+  );
   socket.on("join", (nick) => handler.handleJoin(nick));
   socket.on("leave", (nick) => handler.handleLeave(nick));
   socket.on("action", (type, data) => handler.handleAction(type, data));
@@ -46,8 +50,14 @@ const socketHandler = () => {
   return {
     handleConnectionError: (err) => console.log(err),
     handleChat: (id, nick, message) => send(`**${nick}**: ${message}`),
-    handleJoin: (nick) => send(`*${nick} has joined*`),
-    handleLeave: (nick) => send(`*${nick} has left*`),
+    handleJoin: (nick, role) => {
+      players.set(nick, role);
+      send(`*${nick} has joined*`);
+    },
+    handleLeave: (nick) => {
+      players.delete(nick);
+      send(`*${nick} has left*`);
+    },
     handleAction: (type, data) => {
       const actions = {
         GLOG: 5,
@@ -60,7 +70,33 @@ const socketHandler = () => {
   };
 };
 
+// Command handler
+const cmd = (text) => {
+  handle = {
+    taco: () => send(`taco?!`),
+    say: (args) => {
+      if (args.length) send(args.join(" "));
+    },
+    online: () => {
+      if (players.size) {
+        const list = Array.from(players.keys()).join(", ");
+        send(list);
+      } else send("No one is playing");
+    },
+    default: () => {
+      // Unlisted command action here
+    },
+  };
+  const split = text.split(" ");
+  const c = split[0];
+  split.shift();
+  if (c && c.substring(0, 1) == "!")
+    (handle[c.substring(1)] || handle["default"])(split);
+};
+
 // Bot events
 client.on("message", (message) => {
-  //console.log(message);
+  const { content, author } = message;
+  const username = author.username;
+  if (!username.includes(botName)) cmd(content);
 });
