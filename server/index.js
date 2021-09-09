@@ -1,4 +1,4 @@
-const { port, minVersion, seed, itemSharing } = require("./data/config");
+const { port, minVersion, seed, assetVersion, itemSharing } = require("./data/config");
 const handler = require("./handler");
 const events = require("./events/events");
 
@@ -15,12 +15,12 @@ io.use((socket, next) => {
   const {query, auth} = socket.handshake;
   const token = auth.token;
   const version = query.version;
-  const acceptableVersion = query.version >= minVersion;
+  const acceptableVersion = version >= minVersion;
   EventHandler.handleAuth(sockets, socket, acceptableVersion, token, next);
 });
 
 io.on("connection", (socket) => {
-  socket.emit(events.MOTD, EventHandler.motd(seed));
+  socket.emit(events.MOTD, EventHandler.motd(seed, assetVersion));
   socket.on(events.ADMIN, () => EventHandler.handleAdmin());
   socket.on(events.DISCONNECT, () => EventHandler.handleDisconnect(sockets, socket));
   socket.on(events.PLAYERLISTREQUEST, () => EventHandler.handlePlayerListRequest(sockets, socket));

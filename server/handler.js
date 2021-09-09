@@ -53,10 +53,11 @@ const handler = (io) => {
       let player = sockets.get(socket.id);
       hio.emit(events.CHAT, socket.id, player.nick, message);
     },
-    motd: (seed) =>
+    motd: (seed, assetVersion) =>
       JSON.stringify({
         motd: `Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
         seed,
+        assetVersion
       }),
   };
 };
