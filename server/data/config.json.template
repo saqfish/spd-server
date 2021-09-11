@@ -1,0 +1,15 @@
+{
+	"port": 5800,
+	"roomprefix": "spdnet",
+	"seed": 123456787,
+	"minVersion": 500,
+	"assetVersion": 1,
+	"itemSharing": true,
+	"motd": "Welcome to my server!",
+	"accounts": [
+		{ "bot": true, "key": "bot-key", "nick": "bot" },
+		{ "admin": true, "key": "admin-key", "nick": "admin" },
+		{ "key": "player1-key", "nick": "player1" }
+		{ "key": "player2-key", "nick": "player2" }
+	]
+}
