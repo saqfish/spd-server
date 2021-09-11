@@ -1,4 +1,4 @@
-const { port, minVersion, seed, assetVersion, itemSharing } = require("./data/config");
+const { port, minVersion, motd, seed, assetVersion, itemSharing } = require("./data/config");
 const handler = require("./handler");
 const events = require("./events/events");
 
@@ -13,14 +13,12 @@ const EventHandler = handler(io);
 
 io.use((socket, next) => {
   const {query, auth} = socket.handshake;
-  const token = auth.token;
-  const version = query.version;
-  const acceptableVersion = version >= minVersion;
-  EventHandler.handleAuth(sockets, socket, acceptableVersion, token, next);
+  const acceptableVersion = query.version >= minVersion;
+  EventHandler.handleAuth(sockets, socket, acceptableVersion, auth.token, next);
 });
 
-io.on("connection", (socket) => {
-  socket.emit(events.MOTD, EventHandler.motd(seed, assetVersion));
+io.on(events.CONNECT, (socket) => {
+  socket.emit(events.INIT, EventHandler.init(motd, seed, assetVersion));
   socket.on(events.ADMIN, () => EventHandler.handleAdmin());
   socket.on(events.DISCONNECT, () => EventHandler.handleDisconnect(sockets, socket));
   socket.on(events.PLAYERLISTREQUEST, () => EventHandler.handlePlayerListRequest(sockets, socket));
@@ -30,7 +28,7 @@ io.on("connection", (socket) => {
   socket.on(events.CHAT, (message) => EventHandler.handleChat(sockets, socket, message));
 });
 
-io.of("/").adapter.on("join-room", (room, id) =>
+io.of("/").adapter.on(events.JOINROOM, (room, id) =>
   EventHandler.handleJoinRoom(sockets, io.sockets.adapter.rooms.get(room), id))
 
-io.of("/").adapter.on("leave-room", (room, id) => EventHandler.handleLeaveRoom(room, id)); 
+io.of("/").adapter.on(events.LEAVEROOM, (room, id) => EventHandler.handleLeaveRoom(room, id)); 

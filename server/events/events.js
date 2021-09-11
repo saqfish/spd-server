@@ -1,7 +1,9 @@
 module.exports = {
+    INIT: "init",
     ACTION: "action",
     ADMIN: "admin",
     CHAT: "chat",
+    CONNECT: "connection",
     DISCONNECT: "disconnecting",
     MESSAGE: "message",
     MOTD: "motd",
@@ -10,4 +12,6 @@ module.exports = {
     RECORDS: "records",
     JOIN: "join",
     LEAVE: "leave",
+    JOINROOM: "join-room",
+    LEAVEROOM: "leave-room",
 };

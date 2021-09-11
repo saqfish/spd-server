@@ -1,5 +1,5 @@
-const joinRoom = require("./adapter/joinRoom");
-const leaveRoom = require("./adapter/leaveRoom");
+const joinRoom = require("./events/joinRoom");
+const leaveRoom = require("./events/leaveRoom");
 const playerListRequest = require("./events/playerListRequest");
 const recordsRequest = require("./events/recordsRequest");
 const disconnect = require("./events/disconnect");
@@ -24,6 +24,7 @@ const handler = (io) => {
     handleDisconnect: disconnect,
     handleAdmin: admin,
     handleLeaveRoom: leaveRoom,
+    init: (motd, seed, assetVersion) => JSON.stringify({ motd, seed, assetVersion }),
     handleRecordsRequest: (socket) => recordsRequest(socket, records),
     handleActions: (sockets, socket, type, data) =>
       actions(sockets, socket, records, type, data),
@@ -40,7 +41,6 @@ const handler = (io) => {
     },
     handleAuth: (sockets, socket, acceptableVersion, token, next) => {
       if (!acceptableVersion) next(new Error("Your game is outdated. Please update your version to play."));
-
       auth(sockets, socket, token)
         .then(() => {
           let player = sockets.get(socket.id);
@@ -53,12 +53,6 @@ const handler = (io) => {
       let player = sockets.get(socket.id);
       hio.emit(events.CHAT, socket.id, player.nick, message);
     },
-    motd: (seed, assetVersion) =>
-      JSON.stringify({
-        motd: `Welcome to the test server. Please enjoy your stay and report all bugs to saqfish over on the discord! \nBuild: ${version}`,
-        seed,
-        assetVersion
-      }),
   };
 };
 
