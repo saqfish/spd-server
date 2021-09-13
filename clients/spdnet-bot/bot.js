@@ -37,9 +37,7 @@ client.on("ready", () => {
 
   const handler = socketHandler();
 
-  socket.on("chat", (id, nick, message) =>
-    handler.handleChat(id, nick, message)
-  );
+  socket.on("chat", (id, nick, message) => handler.handleChat(id, nick, message));
   socket.on("join", (nick, id) => handler.handleJoin(nick, id));
   socket.on("leave", (nick, id) => handler.handleLeave(nick, id));
   socket.on("action", (type, data) => handler.handleAction(type, data));
@@ -86,18 +84,25 @@ const cmd = (text) => {
     },
     give: (args) => {
       const player = players.get(args[0]);
+      const n = Number.parseInt(args[1]);
+      const isValidNumber = n > 0 && n < 4;
       if (player) {
-        socket.emit(
-          "transfer",
-          JSON.stringify({
-            className: args[1],
-            cursed: false,
-            id: player,
-            identified: true,
-            level: args[2],
-          }),
-          () => send("Sent")
-        );
+        if (isValidNumber) {
+          // Literally send it n amount of times lol
+          for (let i = 0; i < n; i++)
+            socket.emit(
+              "transfer",
+              JSON.stringify({
+                className: args[2],
+                cursed: false,
+                id: player,
+                identified: true,
+                level: args[3],
+              }),
+              () => {}
+            );
+        } else
+          send(`Invalid number: ${args[1]}. Number of items must be 1 - 3.`);
       } else send(`No player: ${args[0]}`);
     },
     default: () => {
