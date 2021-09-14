@@ -7,9 +7,19 @@ const send = (text) => {
   if (channel && ready) channel.send(text);
 };
 
+const sendTo = (o, text) => {
+  if (ready) o.send(text);
+};
+
 // Discord client
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_PRESENCES,
+    Intents.FLAGS.DIRECT_MESSAGES,
+  ],
+  partials: ["CHANNEL"],
 });
 
 // Globals
@@ -37,7 +47,9 @@ client.on("ready", () => {
 
   const handler = socketHandler();
 
-  socket.on("chat", (id, nick, message) => handler.handleChat(id, nick, message));
+  socket.on("chat", (id, nick, message) =>
+    handler.handleChat(id, nick, message)
+  );
   socket.on("join", (nick, id) => handler.handleJoin(nick, id));
   socket.on("leave", (nick, id) => handler.handleLeave(nick, id));
   socket.on("action", (type, data) => handler.handleAction(type, data));
@@ -70,10 +82,10 @@ const socketHandler = () => {
 };
 
 // Command handler
-const cmd = (text) => {
+const cmd = (text, user) => {
   handle = {
     taco: () => send(`taco?!`),
-    say: (args) => {
+    say: ({ args }) => {
       if (args.length) send(args.join(" "));
     },
     online: () => {
@@ -82,7 +94,7 @@ const cmd = (text) => {
         send(list);
       } else send("No one is playing");
     },
-    give: (args) => {
+    give: ({ args }) => {
       const player = players.get(args[0]);
       const n = Number.parseInt(args[1]);
       const isValidNumber = n > 0 && n < 4;
@@ -105,20 +117,26 @@ const cmd = (text) => {
           send(`Invalid number: ${args[1]}. Number of items must be 1 - 3.`);
       } else send(`No player: ${args[0]}`);
     },
+    register: ({ user }) => {
+      const { id, username, discriminator } = user;
+      socket.emit("admin", 0, { id, username, discriminator }, (key) =>
+        sendTo(user, `Your key is ${key}`)
+      );
+    },
     default: () => {
       // Unlisted command action here
     },
   };
-  const split = text.split(" ");
-  const c = split[0];
-  split.shift();
+  const args = text.split(" ");
+  const c = args[0];
+  args.shift();
   if (c && c.substring(0, 1) == "!")
-    (handle[c.substring(1)] || handle["default"])(split);
+    (handle[c.substring(1)] || handle["default"])({ args, user });
 };
 
 // Bot events
-client.on("message", (message) => {
+client.on("messageCreate", (message) => {
   const { content, author } = message;
   const username = author.username;
-  if (!username.includes(botName)) cmd(content);
+  if (!username.includes(botName)) cmd(content, author);
 });

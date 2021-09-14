@@ -19,7 +19,7 @@ io.use((socket, next) => {
 
 io.on(events.CONNECT, (socket) => {
   socket.emit(events.INIT, EventHandler.init(motd, seed, assetVersion));
-  socket.on(events.ADMIN, () => EventHandler.handleAdmin());
+  socket.on(events.ADMIN, (type, data, cb) => EventHandler.handleAdmin(type, data, sockets, socket, cb));
   socket.on(events.DISCONNECT, () => EventHandler.handleDisconnect(sockets, socket));
   socket.on(events.PLAYERLISTREQUEST, () => EventHandler.handlePlayerListRequest(sockets, socket));
   socket.on(events.RECORDS, () => EventHandler.handleRecordsRequest(socket));

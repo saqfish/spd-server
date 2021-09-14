@@ -36,6 +36,16 @@ const readConfig = () => {
     }));
 }
 
+const writeConfig = (config) => {
+  return new Promise((res, rej) =>
+    fs.writeFile(path.resolve(__dirname, "./data/config.json"), JSON.stringify(config), function (err) {
+      if (err) {
+        rej();
+      }
+      res();
+    }));
+}
+
 const readRecords = (records) => {
   return new Promise((res, rej) =>
     fs.readFile(path.resolve(__dirname, "./data/records.json"), 'utf8', function (err, data) {
@@ -68,6 +78,7 @@ module.exports = {
   sortSocketsByDepth,
   sendMessage,
   readConfig,
+  writeConfig,
   readRecords,
   writeRecords,
 };

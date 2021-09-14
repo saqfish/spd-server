@@ -22,9 +22,11 @@ const handler = (io) => {
   return {
     handlePlayerListRequest: playerListRequest,
     handleDisconnect: disconnect,
-    handleAdmin: admin,
     handleLeaveRoom: leaveRoom,
-    init: (motd, seed, assetVersion) => JSON.stringify({ motd, seed, assetVersion }),
+    handleAdmin: (type, data, sockets, socket, cb) =>
+      admin(type, data, sockets, socket, cb),
+    init: (motd, seed, assetVersion) =>
+      JSON.stringify({ motd, seed, assetVersion }),
     handleRecordsRequest: (socket) => recordsRequest(socket, records),
     handleActions: (sockets, socket, type, data) =>
       actions(sockets, socket, records, type, data),
@@ -36,11 +38,16 @@ const handler = (io) => {
       transfer(socket, sockets, data).then((res) => {
         if (itemSharing)
           hio.to(res.id).emit(events.TRANSFER, JSON.stringify(res));
-        if(cb) cb(itemSharing);
+        if (cb) cb(itemSharing);
       });
     },
     handleAuth: (sockets, socket, acceptableVersion, token, next) => {
-      if (!acceptableVersion) next(new Error("Your game is outdated. Please update your version to play."));
+      if (!acceptableVersion)
+        next(
+          new Error(
+            "Your game is outdated. Please update your version to play."
+          )
+        );
       auth(sockets, socket, token)
         .then(() => {
           let player = sockets.get(socket.id);
