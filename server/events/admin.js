@@ -12,7 +12,7 @@ const admin = (type, data, sockets, socket, cb) => {
     readConfig().then((config) => {
       const found = config.accounts.find((acc) => acc.nick == username);
       if (!found) {
-        const acc = { key: newKey, nick: username };
+        const acc = { key: `${newKey}`, nick: username };
         config.accounts = [...config.accounts, acc];
         writeConfig(config).then(() => cb(acc.key));
       } else cb(found.key);
