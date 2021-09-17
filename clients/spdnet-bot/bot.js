@@ -92,30 +92,54 @@ const cmd = (text, user) => {
       if (players.size) {
         const list = Array.from(players.keys()).join(", ");
         send(list);
-      } else send("No one is playing");
+      } else send("No one is playing!");
     },
     give: ({ args }) => {
-      const player = players.get(args[0]);
-      const n = Number.parseInt(args[1]);
-      const isValidNumber = n > 0 && n < 4;
+      if (args.length < 5) {
+        send(
+          `\`!give [item count] [item class name ] [item level] [player name]\`\n 
+	     Player names are case sensitive. Use !online to see a list of current players`
+        );
+        return;
+      }
+
+      const [numberofItems, className, itemLevel, ...playerNameList] = args;
+      const playerName = playerNameList.join(" ");
+      const player = players.get(playerName);
+      const count = Number.parseInt(numberofItems);
+      const level = Number.parseInt(itemLevel);
+      const isValidNumber = count > 0 && count < 4;
+
+      if (!count) {
+        send(`Invalid item count!`);
+        return;
+      }
+
+      if (!level) {
+        send(`Invalid item level!`);
+        return;
+      }
+
       if (player) {
         if (isValidNumber) {
           // Literally send it n amount of times lol
-          for (let i = 0; i < n; i++)
+          for (let i = 0; i < count; i++)
             socket.emit(
               "transfer",
               JSON.stringify({
-                className: args[2],
+                className: className,
                 cursed: false,
                 id: player,
                 identified: true,
-                level: args[3],
+                level,
               }),
               () => {}
             );
         } else
-          send(`Invalid number: ${args[1]}. Number of items must be 1 - 3.`);
-      } else send(`No player: ${args[0]}`);
+          send(
+            `Invalid number: ${numberofItems}. Number of items must be 1 - 3.`
+          );
+      } else send(`No player: ${playerName}!`);
     },
     register: ({ user }) => {
       const { id, username, discriminator } = user;
