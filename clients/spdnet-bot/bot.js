@@ -62,9 +62,11 @@ client.on("ready", () => {
 
   const handler = socketHandler();
 
-  socket.on("connect", () => sendToMain("Connected to SPDNet"));
+  // socket.on("connect", () => sendTo(spamChannel, "Connected to SPDNet"));
   socket.on("disconnected", () => sendToMain("Disconnected from SPDNet"));
-  socket.on("chat", (id, nick, message) => handler.handleChat(id, nick, message));
+  socket.on("chat", (id, nick, message) =>
+    handler.handleChat(id, nick, message)
+  );
   socket.on("join", (nick, id) => handler.handleJoin(nick, id));
   socket.on("leave", (nick, id) => handler.handleLeave(nick, id));
   socket.on("action", (type, data) => handler.handleAction(type, data));
@@ -158,6 +160,12 @@ const cmd = (text, user) => {
             `Invalid number: ${numberofItems}. Number of items must be 1 - 3.`
           );
       } else sendTo(currentChannel, `No player: ${playerName}!`);
+    },
+    seed: ({ user, args }) => {
+      const { username } = user;
+      socket.emit("admin", 1, { username, seed: args[0] }, (reply) =>
+        sendTo(user, reply)
+      );
     },
     register: ({ user }) => {
       const { id, username, discriminator } = user;

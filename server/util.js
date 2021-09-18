@@ -36,6 +36,17 @@ const readConfig = () => {
     }));
 }
 
+const readGlobalConfig = () => {
+  return new Promise((res, rej) =>
+    fs.readFile(path.resolve(__dirname, "./server/data/config.json"), 'utf8', function (err, data) {
+      if (err) {
+        log("CONFIG", err);
+        rej({});
+      }
+      res(JSON.parse(data));
+    }));
+}
+
 const writeConfig = (config) => {
   return new Promise((res, rej) =>
     fs.writeFile(path.resolve(__dirname, "./data/config.json"), JSON.stringify(config), function (err) {

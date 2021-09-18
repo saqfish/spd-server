@@ -12,7 +12,7 @@ const events = require("./events/events");
 const send = require("./send");
 
 const { version } = require("../package");
-const { readRecords, log } = require("./util");
+const { readConfig, readRecords, log } = require("./util");
 
 const handler = (io) => {
   hio = io;
@@ -23,8 +23,9 @@ const handler = (io) => {
     handlePlayerListRequest: playerListRequest,
     handleDisconnect: disconnect,
     handleLeaveRoom: leaveRoom,
-    handleAdmin: (type, data, sockets, socket, cb) =>
-      admin(type, data, sockets, socket, cb),
+    handleAdmin: (type, data, sockets, socket) => {
+      return admin(type, data, sockets, socket);
+    },
     init: (motd, seed, assetVersion) =>
       JSON.stringify({ motd, seed, assetVersion }),
     handleRecordsRequest: (socket) => recordsRequest(socket, records),
