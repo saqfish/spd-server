@@ -164,7 +164,7 @@ const cmd = (text, user) => {
     seed: ({ user, args }) => {
       const { username } = user;
       socket.emit("admin", 1, { username, seed: args[0] }, (reply) =>
-        sendTo(user, reply)
+        sendTo(currentChannel, reply)
       );
     },
     register: ({ user }) => {
