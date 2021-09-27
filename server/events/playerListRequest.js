@@ -14,6 +14,7 @@ const playerListRequest = (sockets, socket) => {
       depth: get("depth", p),
       items: p.items,
       role: p.role,
+      id: p.socket.id,
     });
   });
   let payload = JSON.stringify({ list });

@@ -31,7 +31,6 @@ let currentChannel = null;
 //TODO: set botname from discord info
 const botName = "spdnet-bot";
 
-//TODO: don't cache your own users, get them from server
 const players = new Map();
 
 // Begin bot
@@ -62,7 +61,9 @@ client.on("ready", () => {
 
   const handler = socketHandler();
 
-  // socket.on("connect", () => sendTo(spamChannel, "Connected to SPDNet"));
+  socket.emit("playerlistrequest");
+
+  socket.on("connect", () => {});
   socket.on("disconnected", () => sendToMain("Disconnected from SPDNet"));
   socket.on("chat", (id, nick, message) =>
     handler.handleChat(id, nick, message)
@@ -71,12 +72,19 @@ client.on("ready", () => {
   socket.on("leave", (nick, id) => handler.handleLeave(nick, id));
   socket.on("action", (type, data) => handler.handleAction(type, data));
   socket.on("connect_error", (err) => handler.handleConnectionError(err));
+  socket.on("playerlistrequest", (data) => handler.handleList(data));
 });
 
 // Socket handler
 const socketHandler = () => {
   return {
     handleConnectionError: (err) => console.log(err),
+    handleList: (data) => {
+      const { list } = JSON.parse(data);
+      for (const { nick, role, id } of list) {
+        if (role != 2) players.set(nick, id);
+      }
+    },
     handleChat: (id, nick, message) =>
       sendTo(spamChannel, `**${nick}**: ${message}`),
     handleJoin: (nick, id) => {
