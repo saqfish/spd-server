@@ -46,7 +46,10 @@ const handler = (io) => {
       if (!acceptableVersion)
         next(
           new Error(
-            "Your game is outdated. Please update your version to play."
+            JSON.stringify({
+              type: 1,
+              data: "Your game is outdated. Please update your version to play."
+            })
           )
         );
       auth(sockets, socket, token)

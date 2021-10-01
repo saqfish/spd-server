@@ -67,11 +67,7 @@ loadConfig()
     });
 
     io.of("/").adapter.on(events.JOINROOM, (room, id) =>
-      EventHandler.handleJoinRoom(
-        sockets,
-        io.sockets.adapter.rooms.get(room),
-        id
-      )
+      EventHandler.handleJoinRoom( sockets, io.sockets.adapter.rooms.get(room), id)
     );
 
     io.of("/").adapter.on(events.LEAVEROOM, (room, id) =>

@@ -18,13 +18,11 @@ const auth = (sockets, socket, token) =>
       if (players.has(token)) {
         const player = players.get(token);
         sockets.set(socket.id, { socket, ...player });
-
         log(socket.id, `${player.nick} identified`, player.role);
         res();
       } else {
         log(socket.id, "rejected auth");
-
-        const e = new Error("Your key is invalid!");
+        const e = new Error(JSON.stringify({ type: 0, data: "Your key is invalid!" }));
         rej(e);
       }
     });
