@@ -2,6 +2,9 @@ const { Client, Intents } = require("discord.js");
 const { discord, server } = require("./config.json");
 const io = require("socket.io-client");
 
+const help = require("./commands/help");
+const commands = require("./commands/commands");
+
 // Util
 const sendTo = (o, text) => {
   if (ready && o) o.send(text);
@@ -181,15 +184,8 @@ const cmd = (text, user) => {
         sendTo(user, `Your key is ${key}`)
       );
     },
-    help: () =>
-      sendTo(
-        currentChannel,
-        "`!register` - register for SPDNet\n" +
-          "`!online` - list online players\n" +
-          "`!give [item count] [item class name ] [item level] [player name]` - give a player an item\n" +
-          "`!say [text]` - say text\n" +
-          "`!help` - this help"
-      ),
+    help: () => sendTo(currentChannel, help),
+    commands: () => sendTo(currentChannel, commands),
     default: () => {
       // Unlisted command action here
     },

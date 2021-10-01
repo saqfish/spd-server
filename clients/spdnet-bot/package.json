@@ -1,0 +1,11 @@
+{
+  "name": "spdnet-bot",
+  "version": "1.0.0",
+  "description": "SPDNet bot",
+  "main": "bot.js",
+  "scripts": {
+	"start": "node bot.js"
+  },
+  "author": "saqfish",
+  "license": "ISC"
+}
