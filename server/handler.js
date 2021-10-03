@@ -5,7 +5,7 @@ const recordsRequest = require("./events/recordsRequest");
 const disconnect = require("./events/disconnect");
 const actions = require("./events/actions");
 const transfer = require("./events/transfer");
-const admin = require("./events/admin");
+const admin = require("./events/admin/admin");
 const { auth } = require("./middlewares/auth");
 
 const events = require("./events/events");
