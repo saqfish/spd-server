@@ -184,6 +184,12 @@ const cmd = (text, user) => {
         sendTo(user, `Your key is ${key}`)
       );
     },
+    kick: ({ user, args }) => {
+      const { username } = user;
+      socket.emit("admin", 2, { username, offender: args[0] }, (reply) =>
+        sendTo(currentChannel, reply)
+      );
+    },
     help: () => sendTo(currentChannel, help),
     commands: () => sendTo(currentChannel, commands),
     default: () => {

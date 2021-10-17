@@ -1,10 +1,12 @@
 const { log } = require("../../util");
 const register = require("./register");
 const seed = require("./seed");
+const kick = require("./kick");
 
 const Types = {
   REGISTER: 0,
   SEED: 1,
+  KICK: 2,
 };
 
 const admin = (type, data, sockets, socket) => {
@@ -16,6 +18,7 @@ const admin = (type, data, sockets, socket) => {
       default: (data, rej) => {
         rej();
       },
+      [Types.KICK]: (data, rej, res, sockets) => kick(data, rej, res, sockets),
     };
     func = handler[type] || handle["defualt"];
     func(data, reject, resolve, sockets, socket);
