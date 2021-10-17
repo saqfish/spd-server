@@ -16,7 +16,7 @@ module.exports = {
         },
         {
           name: `Give a player an item`,
-          value: `\`\`\`!give [item count] [item class name] [item level] [player name]\`\`\`\nItem class names can be found [here](https://github.com/saqfish/spdnet/tree/master/core/src/main/java/com/saqfish/spdnet/items)`,
+          value: `\`\`\`!give [item count] [item class name] [item level]\`\`\`\nItem class names can be found [here](https://github.com/saqfish/spdnet/tree/master/core/src/main/java/com/saqfish/spdnet/items)`,
         },
         {
           name: `Change the current seed`,

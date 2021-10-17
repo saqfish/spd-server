@@ -123,19 +123,19 @@ const cmd = (text, user) => {
         sendTo(currentChannel, list);
       } else sendTo(currentChannel, "No one is playing!");
     },
-    give: ({ args }) => {
-      if (args.length < 4) {
+    give: ({ user, args }) => {
+      const { username } = user;
+      if (args.length < 3) {
         sendTo(
           currentChannel,
-          `\`!give [item count] [item class name ] [item level] [player name]\`\n 
+          `\`!give [item count] [item class name ] [item level]\`\n 
 	     Player names are case sensitive. Use !online to see a list of current players`
         );
         return;
       }
 
-      const [numberofItems, className, itemLevel, ...playerNameList] = args;
-      const playerName = playerNameList.join(" ");
-      const player = players.get(playerName);
+      const [numberofItems, className, itemLevel] = args;
+      const player = players.get(username);
       const count = Number.parseInt(numberofItems);
       const level = Number.parseInt(itemLevel);
       const isValidNumber = count > 0 && count < 4;
@@ -170,7 +170,7 @@ const cmd = (text, user) => {
             currentChannel,
             `Invalid number: ${numberofItems}. Number of items must be 1 - 3.`
           );
-      } else sendTo(currentChannel, `No player: ${playerName}!`);
+      } else sendTo(currentChannel, `No player: ${username}!`);
     },
     seed: ({ user, args }) => {
       const { username } = user;
