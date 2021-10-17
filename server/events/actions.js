@@ -1,5 +1,11 @@
 const { roomprefix } = require("../data/config");
-const { log, keyval, writeRecords, playerPayload, sortSocketsByDepth } = require("../util");
+const {
+  log,
+  keyval,
+  writeRecords,
+  playerPayload,
+  sortSocketsByDepth,
+} = require("../util");
 const events = require("./events");
 const send = require("../send");
 const receive = require("../receive");
@@ -11,7 +17,7 @@ const items = {
   artifact: 3,
   misc: 4,
   ring: 5,
-}
+};
 
 const actions = (...args) => {
   let [sockets, socket, records, type, data] = args;
@@ -39,8 +45,7 @@ const actions = (...args) => {
           pos: null,
           items: null,
         });
-      } else
-        sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
+      } else sockets.set(socket.id, { ...sockets.get(socket.id), ...json });
       sortSocketsByDepth(sockets);
     },
     [receive.MOVE]: ({ sockets, player, socket, data }) => {
@@ -76,28 +81,31 @@ const actions = (...args) => {
     [receive.DEATH]: ({ player, socket, data }) => {
       log(player.nick, "<- DEATH -> all rooms");
       let json = JSON.parse(data);
-      let payload = JSON.stringify({msg: `${player.nick} ${json.cause}`});
+      let payload = JSON.stringify({ msg: `${player.nick} ${json.cause}` });
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     [receive.BOSSKILL]: ({ player, socket, data }) => {
       log(player.nick, "<- BOSSKILL -> all rooms");
-      let payload = JSON.stringify({msg: `${player.nick} defeated ${data}!`});
+      let payload = JSON.stringify({ msg: `${player.nick} defeated ${data}!` });
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
     [receive.WIN]: ({ player, socket, records }) => {
       log(player.nick, "<- WIN -> all rooms");
-      if (records[player.nick]) {
-      } else  records[player.nick] = {};
-      let wins = records[player.nick].wins || 0;
-      records[player.nick].wins = wins + 1;
-      records[player.nick].playerClass = player.playerClass;
-      records[player.nick].depth = player.depth;
-      records[player.nick].items = player.items;
-      writeRecords(records);
-      let payload = JSON.stringify({msg: `${player.nick} won the game!`});
+      if (!player.invalidRecord) {
+        if (records[player.nick]) {
+        } else records[player.nick] = {};
+        let wins = records[player.nick].wins || 0;
+        records[player.nick].wins = wins + 1;
+        records[player.nick].playerClass = player.playerClass;
+        records[player.nick].depth = player.depth;
+        records[player.nick].items = player.items;
+        writeRecords(records);
+      }
+
+      let payload = JSON.stringify({ msg: `${player.nick} won the game!` });
       socket.broadcast.emit(events.ACTION, send.GLOG, payload);
     },
-    "default": ({ type, json }) => log("UNKNOWN", type, json)
+    default: ({ type, json }) => log("UNKNOWN", type, json),
   };
   return (handler[type] || handler["default"])({
     sockets,
@@ -124,7 +132,14 @@ const joinDepthRoom = (socket, playerClass, depth, pos, items, nick) => {
   if (depth) {
     const room = depthToRoom(depth);
     socket.join(room);
-    let payload = playerPayload(socket.id, playerClass, nick, depth, pos, items);
+    let payload = playerPayload(
+      socket.id,
+      playerClass,
+      nick,
+      depth,
+      pos,
+      items
+    );
     socket.to(room).emit(events.ACTION, send.JOIN, payload);
   }
 };
