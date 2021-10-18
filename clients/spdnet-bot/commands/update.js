@@ -1,6 +1,4 @@
 module.exports = {
-  filename:
-    "https://raw.githubusercontent.com/saqfish/spd-server/master/clients/spdnet-bot/commands/update.png",
   components: [
     {
       type: 1,
@@ -17,6 +15,11 @@ module.exports = {
   ],
   embeds: [
     {
+      image: {
+        url: `https://raw.githubusercontent.com/saqfish/spd-server/master/clients/spdnet-bot/commands/update.png`,
+        height: 0,
+        width: 0,
+      },
       type: "rich",
       title: `Mandatory update!`,
       description: `In this update, I've added two things:\n\n1. Players will now see when other players join or leave in their game log.\n2. The !give command can now give up to 10,000 of each item.\n\nEnjoy!\n`,
