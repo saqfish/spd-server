@@ -2,6 +2,7 @@ const { Client, Intents } = require("discord.js");
 const { discord, server } = require("./config.json");
 const io = require("socket.io-client");
 
+const update = require("./commands/update");
 const help = require("./commands/help");
 const commands = require("./commands/commands");
 
@@ -68,9 +69,7 @@ client.on("ready", () => {
 
   socket.on("connect", () => {});
   socket.on("disconnected", () => sendToMain("Disconnected from SPDNet"));
-  socket.on("chat", (id, nick, message) =>
-    handler.handleChat(id, nick, message)
-  );
+  socket.on("chat", (id, nick, message) => handler.handleChat(id, nick, message));
   socket.on("join", (nick, id) => handler.handleJoin(nick, id));
   socket.on("leave", (nick, id) => handler.handleLeave(nick, id));
   socket.on("action", (type, data) => handler.handleAction(type, data));
@@ -117,6 +116,9 @@ const cmd = (text, user) => {
     say: ({ args }) => {
       if (args.length) sendTo(currentChannel, args.join(" "));
     },
+    say: ({ args }) => {
+      if (args.length) sendTo(currentChannel, args.join(" "));
+    },
     online: () => {
       if (players.size) {
         const list = Array.from(players.keys()).join(", ");
@@ -136,9 +138,9 @@ const cmd = (text, user) => {
 
       const [numberofItems, className, itemLevel] = args;
       const player = players.get(username);
-      const count = Number.parseInt(numberofItems);
-      const level = Number.parseInt(itemLevel);
-      const isValidNumber = count > 0 && count < 4;
+      const count = Number.parseInt(numberofItems) || 1;
+      const level = Number.parseInt(itemLevel) || 0;
+      const isValidNumber = count > 0 && count < 10000;
 
       if (!count) {
         sendTo(currentChannel, `Invalid item count!`);
@@ -152,23 +154,22 @@ const cmd = (text, user) => {
 
       if (player) {
         if (isValidNumber) {
-          // Literally send it n amount of times lol
-          for (let i = 0; i < count; i++)
-            socket.emit(
-              "transfer",
-              JSON.stringify({
-                className: className,
-                cursed: false,
-                id: player,
-                identified: true,
-                level,
-              }),
-              () => {}
-            );
+          socket.emit(
+            "transfer",
+            JSON.stringify({
+              className: className,
+              cursed: false,
+              count,
+              id: player,
+              identified: true,
+              level,
+            }),
+            () => {}
+          );
         } else
           sendTo(
             currentChannel,
-            `Invalid number: ${numberofItems}. Number of items must be 1 - 3.`
+            `Invalid number: ${numberofItems}. Number of items must be 1 - 10000.`
           );
       } else sendTo(currentChannel, `No player: ${username}!`);
     },
@@ -190,6 +191,7 @@ const cmd = (text, user) => {
         sendTo(currentChannel, reply)
       );
     },
+    update: () => sendTo(currentChannel, update),
     help: () => sendTo(currentChannel, help),
     commands: () => sendTo(currentChannel, commands),
     default: () => {
