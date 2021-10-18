@@ -139,18 +139,10 @@ const cmd = (text, user) => {
       const [numberofItems, className, itemLevel] = args;
       const player = players.get(username);
       const count = Number.parseInt(numberofItems) || 1;
-      const level = Number.parseInt(itemLevel) || 0;
       const isValidNumber = count > 0 && count < 10000;
 
-      if (!count) {
-        sendTo(currentChannel, `Invalid item count!`);
-        return;
-      }
-
-      if (!level) {
-        sendTo(currentChannel, `Invalid item level!`);
-        return;
-      }
+      let level = Number.parseInt(itemLevel) || 0;
+      if (level < 0) level = 0;
 
       if (player) {
         if (isValidNumber) {
