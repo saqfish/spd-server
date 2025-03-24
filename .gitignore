@@ -14,3 +14,6 @@ server/data/records.json
 
 # custom update script
 update.sh
+
+# misc
+package-lock.json
