@@ -9,7 +9,7 @@
 	"accounts": [
 		{ "bot": true, "key": "bot-key", "nick": "bot" },
 		{ "admin": true, "key": "admin-key", "nick": "admin" },
-		{ "key": "player1-key", "nick": "player1" }
+		{ "key": "player1-key", "nick": "player1" },
 		{ "key": "player2-key", "nick": "player2" }
 	]
 }
